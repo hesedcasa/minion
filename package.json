@@ -2,17 +2,17 @@
   "name": "minion",
   "version": "1.0.0",
   "description": "Minion - an AI agent orchestrator for managing multiple Claude agents",
-  "main": "dist/minion-cli.js",
+  "main": "dist/index.js",
   "bin": {
-    "minion": "dist/minion-cli.js"
+    "minion": "dist/index.js"
   },
   "type": "module",
   "scripts": {
     "build": "npm run build:server && npm run build:ui",
     "build:server": "tsc",
     "build:ui": "vite build",
-    "start": "tsx src/minion-cli.ts",
-    "dev": "tsx src/minion-cli.ts",
+    "start": "tsx src/index.ts",
+    "dev": "tsx src/index.ts",
     "dev:ui": "vite",
     "find-deadcode": "ts-prune",
     "format": "eslint --cache --fix --quiet . && prettier --write --cache .",

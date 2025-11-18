@@ -31,8 +31,7 @@ This is a **TypeScript-based AI agent orchestrator** that manages multiple Claud
 
 ```
 src/
-├── minion-cli.ts (entry point)        # Main CLI entry point
-├── index.ts                           # Legacy entry point (redirects to minion-cli)
+├── index.ts (entry point)        # Main CLI entry point
 └── minion/
     ├── index.ts                       # Barrel export
     ├── agentManager.ts                # Agent lifecycle management
@@ -68,7 +67,7 @@ dist-ui/                              # Built React UI (production)
 
 ### Core Components
 
-#### Entry Point (`src/minion-cli.ts`)
+#### Entry Point (`src/index.ts`)
 
 - Bootstraps the Minion server
 - Parses command-line arguments (port, repository path)
@@ -156,7 +155,7 @@ minion --port 8080
 
 ## Code Structure & Module Responsibilities
 
-### Entry Point (`minion-cli.ts`)
+### Entry Point (`index.ts`)
 
 - Main bootstrapper for the Minion server
 - Command-line argument parsing
@@ -296,7 +295,7 @@ rm -rf dist && npm run build
 npm start
 
 # Test specific functionality (after building)
-node dist/minion-cli.js --help
+node dist/index.js --help
 ```
 
 ### Common Patterns

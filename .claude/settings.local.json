@@ -13,7 +13,12 @@
       "Bash(npm run find-deadcode:*)",
       "mcp__chrome-devtools__close_page",
       "Bash(npm run build:ui:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run format:*)",
+      "mcp__chrome-devtools__list_console_messages",
+      "Bash(lsof:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot"
     ],
     "deny": [],
     "ask": []

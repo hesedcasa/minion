@@ -1,12 +1,13 @@
+import { ConfigProvider, Layout, Modal, Space, theme as antTheme, message } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
-import { ConfigProvider, Layout, Space, Modal, message, theme as antTheme } from 'antd';
+
 import './App.css';
 import { AgentsGrid } from './components/AgentsGrid';
 import { Controls } from './components/Controls';
+import { EmptyState } from './components/EmptyState';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ThemeToggle } from './components/ThemeToggle';
-import { EmptyState } from './components/EmptyState';
 import { AssignTaskModal } from './components/modals/AssignTaskModal';
 import { CreateAgentModal } from './components/modals/CreateAgentModal';
 import { DiffModal } from './components/modals/DiffModal';
@@ -24,10 +25,10 @@ function App() {
   const [currentAgentForTask, setCurrentAgentForTask] = useState<string | null>(null);
   const [currentAgentForDiff, setCurrentAgentForDiff] = useState<string | null>(null);
   const [diffContent, setDiffContent] = useState('');
-  const [currentWorkspace, setCurrentWorkspace] = useState<string>('minion');
+  const [currentWorkspace] = useState<string>('minion');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('theme');
-    return (saved === 'dark') || !saved;
+    return saved === 'dark' || !saved;
   });
 
   const loadAgents = useCallback(async () => {
@@ -88,7 +89,7 @@ function App() {
     }
 
     const agent = await response.json();
-    setAgents((prev) => [...prev, agent]);
+    setAgents(prev => [...prev, agent]);
   };
 
   const handleAssignTask = async (agentId: string, description: string, context?: string) => {
@@ -118,8 +119,9 @@ function App() {
       setCurrentAgentForDiff(agentId);
       setDiffContent(data.diff || 'No changes yet');
       setIsDiffModalOpen(true);
-    } catch (error: any) {
-      message.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      message.error(`Error: ${msg}`);
     }
   };
 
@@ -157,8 +159,9 @@ function App() {
 
           message.success('Agent stopped successfully');
           loadAgents();
-        } catch (error: any) {
-          message.error(`Error: ${error.message}`);
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          message.error(`Error: ${msg}`);
         }
       },
     });
@@ -182,9 +185,10 @@ function App() {
           }
 
           message.success('Agent removed successfully');
-          setAgents((prev) => prev.filter((agent) => agent.id !== agentId));
-        } catch (error: any) {
-          message.error(`Error: ${error.message}`);
+          setAgents(prev => prev.filter(agent => agent.id !== agentId));
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          message.error(`Error: ${msg}`);
         }
       },
     });
@@ -212,16 +216,18 @@ function App() {
         />
 
         <Layout>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 24px',
-            borderBottom: '1px solid var(--border-color, #d9d9d9)',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px 24px',
+              borderBottom: '1px solid var(--border-color, #d9d9d9)',
+            }}
+          >
             <Header />
             <Space>
-              <ThemeToggle onThemeChange={(theme) => setIsDarkMode(theme === 'dark')} />
+              <ThemeToggle onThemeChange={theme => setIsDarkMode(theme === 'dark')} />
               <Controls
                 isConnected={isConnected}
                 onCreateAgent={() => setIsCreateModalOpen(true)}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+
 import type { WebSocketMessage } from '../types/agent';
 
 export function useWebSocket(onMessage: (message: WebSocketMessage) => void) {
@@ -18,12 +19,12 @@ export function useWebSocket(onMessage: (message: WebSocketMessage) => void) {
         setIsConnected(true);
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = event => {
         const message: WebSocketMessage = JSON.parse(event.data);
         onMessage(message);
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = error => {
         console.error('WebSocket error:', error);
         setIsConnected(false);
       };

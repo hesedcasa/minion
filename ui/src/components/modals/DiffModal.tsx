@@ -1,6 +1,4 @@
-import { Modal, Typography, message } from 'antd';
-
-const { Paragraph } = Typography;
+import { Modal, message } from 'antd';
 
 interface DiffModalProps {
   isOpen: boolean;
@@ -24,8 +22,9 @@ export function DiffModal({ isOpen, agentId, diff, onClose, onMerge }: DiffModal
           await onMerge(agentId);
           message.success('Changes merged successfully!');
           onClose();
-        } catch (error: any) {
-          message.error(`Error: ${error.message}`);
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          message.error(`Error: ${msg}`);
         }
       },
     });
@@ -41,17 +40,19 @@ export function DiffModal({ isOpen, agentId, diff, onClose, onMerge }: DiffModal
       onOk={handleMerge}
       okButtonProps={{ type: 'primary' }}
     >
-      <pre style={{
-        background: 'var(--bg-primary, #f5f5f5)',
-        padding: 16,
-        borderRadius: 4,
-        overflow: 'auto',
-        maxHeight: 500,
-        fontFamily: 'Monaco, Courier New, monospace',
-        fontSize: 12,
-        lineHeight: 1.5,
-        border: '1px solid var(--border-color, #d9d9d9)',
-      }}>
+      <pre
+        style={{
+          background: 'var(--bg-primary, #f5f5f5)',
+          padding: 16,
+          borderRadius: 4,
+          overflow: 'auto',
+          maxHeight: 500,
+          fontFamily: 'Monaco, Courier New, monospace',
+          fontSize: 12,
+          lineHeight: 1.5,
+          border: '1px solid var(--border-color, #d9d9d9)',
+        }}
+      >
         {diff || 'No changes yet'}
       </pre>
     </Modal>

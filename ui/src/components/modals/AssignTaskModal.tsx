@@ -1,4 +1,4 @@
-import { Modal, Form, Input, message } from 'antd';
+import { Form, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 
 const { TextArea } = Input;
@@ -10,12 +10,7 @@ interface AssignTaskModalProps {
   onAssignTask: (agentId: string, description: string, context?: string) => Promise<void>;
 }
 
-export function AssignTaskModal({
-  isOpen,
-  agentId,
-  onClose,
-  onAssignTask,
-}: AssignTaskModalProps) {
+export function AssignTaskModal({ isOpen, agentId, onClose, onAssignTask }: AssignTaskModalProps) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,8 +22,9 @@ export function AssignTaskModal({
       await onAssignTask(agentId, values.description.trim(), values.context?.trim() || undefined);
       form.resetFields();
       onClose();
-    } catch (error: any) {
-      message.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      message.error(`Error: ${msg}`);
     } finally {
       setIsSubmitting(false);
     }

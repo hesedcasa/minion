@@ -1,11 +1,6 @@
-import { Card, Tag, Button, Space, Typography, Alert, Descriptions } from 'antd';
-import {
-  PlayCircleOutlined,
-  StopOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, EyeOutlined, FileTextOutlined, StopOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Descriptions, Space, Tag, Typography } from 'antd';
+
 import type { Agent } from '../types/agent';
 
 const { Text, Paragraph } = Typography;
@@ -29,46 +24,58 @@ const getStatusColor = (status: string) => {
   return colors[status] || 'default';
 };
 
-export function AgentCard({
-  agent,
-  onAssignTask,
-  onViewDiff,
-  onStopAgent,
-  onRemoveAgent,
-}: AgentCardProps) {
+export function AgentCard({ agent, onAssignTask, onViewDiff, onStopAgent, onRemoveAgent }: AgentCardProps) {
   const statusText = agent.status.charAt(0).toUpperCase() + agent.status.slice(1);
 
   return (
     <Card
       hoverable
       title={
-        <Space direction="vertical" size={0} style={{ width: '100%' }}>
+        <Space
+          direction="vertical"
+          size={0}
+          style={{ width: '100%' }}
+        >
           <Text strong>{agent.name}</Text>
-          <Text type="secondary" style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+          <Text
+            type="secondary"
+            style={{ fontSize: '12px', fontFamily: 'monospace' }}
+          >
             {agent.id.slice(0, 8)}
           </Text>
         </Space>
       }
       extra={<Tag color={getStatusColor(agent.status)}>{statusText}</Tag>}
     >
-      <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
+      <Descriptions
+        column={1}
+        size="small"
+        style={{ marginBottom: 16 }}
+      >
         <Descriptions.Item label="Branch">
           <Text code>{agent.branchName}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label="Created">
-          {new Date(agent.createdAt).toLocaleString()}
-        </Descriptions.Item>
+        <Descriptions.Item label="Created">{new Date(agent.createdAt).toLocaleString()}</Descriptions.Item>
       </Descriptions>
 
       {agent.currentTask && (
         <Alert
           message="Current Task"
           description={
-            <Space direction="vertical" size={0}>
-              <Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0 }}>
+            <Space
+              direction="vertical"
+              size={0}
+            >
+              <Paragraph
+                ellipsis={{ rows: 2 }}
+                style={{ margin: 0 }}
+              >
                 {agent.currentTask.description}
               </Paragraph>
-              <Text type="secondary" style={{ fontSize: '12px' }}>
+              <Text
+                type="secondary"
+                style={{ fontSize: '12px' }}
+              >
                 Status: {agent.currentTask.status}
               </Text>
             </Space>
@@ -87,7 +94,11 @@ export function AgentCard({
         >
           Assign Task
         </Button>
-        <Button size="small" icon={<EyeOutlined />} onClick={() => onViewDiff(agent.id)}>
+        <Button
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => onViewDiff(agent.id)}
+        >
           View Changes
         </Button>
         {agent.status === 'running' ? (

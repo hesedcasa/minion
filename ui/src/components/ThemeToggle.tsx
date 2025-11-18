@@ -1,5 +1,5 @@
+import { BulbFilled, BulbOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
-import { BulbOutlined, BulbFilled } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 
 export interface ThemeToggleProps {
@@ -19,7 +19,7 @@ export function ThemeToggle({ onThemeChange }: ThemeToggleProps) {
   }, [theme, onThemeChange]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
   return (

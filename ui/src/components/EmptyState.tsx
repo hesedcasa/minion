@@ -1,5 +1,5 @@
-import { Empty, Card, Space, Typography } from 'antd';
-import { FolderOpenOutlined, BranchesOutlined } from '@ant-design/icons';
+import { BranchesOutlined, FolderOpenOutlined } from '@ant-design/icons';
+import { Card, Space, Typography } from 'antd';
 
 const { Title } = Typography;
 
@@ -10,7 +10,16 @@ interface EmptyStateProps {
 
 export function EmptyState({ onOpenProject, onCloneFromUrl }: EmptyStateProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '48px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        gap: '48px',
+      }}
+    >
       <Title style={{ fontSize: '72px', fontWeight: 800, letterSpacing: '-2px', fontFamily: 'monospace' }}>
         CLONEHUB
       </Title>
@@ -21,7 +30,10 @@ export function EmptyState({ onOpenProject, onCloneFromUrl }: EmptyStateProps) {
           style={{ width: 200, textAlign: 'center' }}
           onClick={onOpenProject}
         >
-          <Space direction="vertical" size="middle">
+          <Space
+            direction="vertical"
+            size="middle"
+          >
             <FolderOpenOutlined style={{ fontSize: 48 }} />
             <span>Open project</span>
           </Space>
@@ -32,7 +44,10 @@ export function EmptyState({ onOpenProject, onCloneFromUrl }: EmptyStateProps) {
           style={{ width: 200, textAlign: 'center' }}
           onClick={onCloneFromUrl}
         >
-          <Space direction="vertical" size="middle">
+          <Space
+            direction="vertical"
+            size="middle"
+          >
             <BranchesOutlined style={{ fontSize: 48 }} />
             <span>Clone from URL</span>
           </Space>

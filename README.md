@@ -57,7 +57,7 @@ Minion is inspired by [Minion.build](https://minion.build/) and implements a web
 ```
 minion/
 ├── src/
-│   ├── minion-cli.ts            # Minion entry point
+│   ├── index.ts            # Minion entry point
 │   └── minion/                  # Minion implementation
 │       ├── agentManager.ts      # Agent orchestration
 │       ├── workspaceManager.ts  # Git worktree management

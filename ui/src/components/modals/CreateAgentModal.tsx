@@ -1,4 +1,4 @@
-import { Modal, Form, Input, message } from 'antd';
+import { Form, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 
 interface CreateAgentModalProps {
@@ -17,8 +17,9 @@ export function CreateAgentModal({ isOpen, onClose, onCreateAgent }: CreateAgent
       await onCreateAgent(values.name.trim(), values.apiKey?.trim() || undefined);
       form.resetFields();
       onClose();
-    } catch (error: any) {
-      message.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      message.error(`Error: ${msg}`);
     } finally {
       setIsSubmitting(false);
     }

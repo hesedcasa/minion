@@ -1,6 +1,7 @@
-import { Row, Col } from 'antd';
-import { AgentCard } from './AgentCard';
+import { Col, Row } from 'antd';
+
 import type { Agent } from '../types/agent';
+import { AgentCard } from './AgentCard';
 
 interface AgentsGridProps {
   agents: Agent[];
@@ -10,17 +11,19 @@ interface AgentsGridProps {
   onRemoveAgent: (agentId: string) => void;
 }
 
-export function AgentsGrid({
-  agents,
-  onAssignTask,
-  onViewDiff,
-  onStopAgent,
-  onRemoveAgent,
-}: AgentsGridProps) {
+export function AgentsGrid({ agents, onAssignTask, onViewDiff, onStopAgent, onRemoveAgent }: AgentsGridProps) {
   return (
     <Row gutter={[16, 16]}>
-      {agents.map((agent) => (
-        <Col key={agent.id} xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+      {agents.map(agent => (
+        <Col
+          key={agent.id}
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={8}
+          xxl={6}
+        >
           <AgentCard
             agent={agent}
             onAssignTask={onAssignTask}
