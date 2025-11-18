@@ -1,12 +1,14 @@
+import { Badge } from 'antd';
+
 interface ConnectionStatusProps {
   isConnected: boolean;
 }
 
 export function ConnectionStatus({ isConnected }: ConnectionStatusProps) {
   return (
-    <div className="status-indicator">
-      <span className={`status-dot ${isConnected ? 'connected' : ''}`} />
-      <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
-    </div>
+    <Badge
+      status={isConnected ? 'success' : 'error'}
+      text={isConnected ? 'Connected' : 'Disconnected'}
+    />
   );
 }

@@ -1,102 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>Minion - AI Agent Orchestrator</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="styles.css"
+    />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>🎵 Minion</h1>
-            <p class="tagline">Orchestrate Your AI Agent Orchestra</p>
-        </header>
+      <header>
+        <h1>🎵 Minion</h1>
+        <p class="tagline">Orchestrate Your AI Agent Orchestra</p>
+      </header>
 
-        <div class="controls">
-            <button id="createAgentBtn" class="btn btn-primary">+ Create New Agent</button>
-            <button id="refreshBtn" class="btn btn-secondary">🔄 Refresh</button>
-            <div class="status-indicator">
-                <span class="status-dot" id="wsStatus"></span>
-                <span id="wsStatusText">Connecting...</span>
-            </div>
+      <div class="controls">
+        <button
+          id="createAgentBtn"
+          class="btn btn-primary"
+          >+ Create New Agent</button
+        >
+        <button
+          id="refreshBtn"
+          class="btn btn-secondary"
+          >🔄 Refresh</button
+        >
+        <div class="status-indicator">
+          <span
+            class="status-dot"
+            id="wsStatus"
+          ></span>
+          <span id="wsStatusText">Connecting...</span>
         </div>
+      </div>
 
-        <div id="agentsGrid" class="agents-grid">
-            <div class="empty-state" id="emptyState">
-                <div class="empty-icon">🎼</div>
-                <h2>No agents yet</h2>
-                <p>Create your first agent to start orchestrating your AI coding team</p>
-            </div>
+      <div
+        id="agentsGrid"
+        class="agents-grid"
+      >
+        <div
+          class="empty-state"
+          id="emptyState"
+        >
+          <div class="empty-icon">🎼</div>
+          <h2>No agents yet</h2>
+          <p>Create your first agent to start orchestrating your AI coding team</p>
         </div>
+      </div>
     </div>
 
     <!-- Create Agent Modal -->
-    <div id="createAgentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create New Agent</h2>
-                <button class="close-btn" id="closeModalBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="agentName">Agent Name</label>
-                    <input type="text" id="agentName" placeholder="e.g., Frontend Developer" required>
-                </div>
-                <div class="form-group">
-                    <label for="apiKey">Anthropic API Key (optional)</label>
-                    <input type="password" id="apiKey" placeholder="sk-ant-...">
-                    <small>Leave empty to use ANTHROPIC_API_KEY environment variable</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                <button class="btn btn-primary" id="confirmCreateBtn">Create Agent</button>
-            </div>
+    <div
+      id="createAgentModal"
+      class="modal"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Agent</h2>
+          <button
+            class="close-btn"
+            id="closeModalBtn"
+            >&times;</button
+          >
         </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="agentName">Agent Name</label>
+            <input
+              type="text"
+              id="agentName"
+              placeholder="e.g., Frontend Developer"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="apiKey">Anthropic API Key (optional)</label>
+            <input
+              type="password"
+              id="apiKey"
+              placeholder="sk-ant-..."
+            />
+            <small>Leave empty to use ANTHROPIC_API_KEY environment variable</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            id="cancelBtn"
+            >Cancel</button
+          >
+          <button
+            class="btn btn-primary"
+            id="confirmCreateBtn"
+            >Create Agent</button
+          >
+        </div>
+      </div>
     </div>
 
     <!-- Task Modal -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Assign Task</h2>
-                <button class="close-btn" id="closeTaskModalBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="taskDescription">Task Description</label>
-                    <textarea id="taskDescription" rows="4" placeholder="Describe what you want the agent to do..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="taskContext">Additional Context (optional)</label>
-                    <textarea id="taskContext" rows="3" placeholder="Provide any additional context or requirements..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
-                <button class="btn btn-primary" id="confirmTaskBtn">Assign Task</button>
-            </div>
+    <div
+      id="taskModal"
+      class="modal"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Assign Task</h2>
+          <button
+            class="close-btn"
+            id="closeTaskModalBtn"
+            >&times;</button
+          >
         </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="taskDescription">Task Description</label>
+            <textarea
+              id="taskDescription"
+              rows="4"
+              placeholder="Describe what you want the agent to do..."
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="taskContext">Additional Context (optional)</label>
+            <textarea
+              id="taskContext"
+              rows="3"
+              placeholder="Provide any additional context or requirements..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            id="cancelTaskBtn"
+            >Cancel</button
+          >
+          <button
+            class="btn btn-primary"
+            id="confirmTaskBtn"
+            >Assign Task</button
+          >
+        </div>
+      </div>
     </div>
 
     <!-- Diff Modal -->
-    <div id="diffModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Changes Preview</h2>
-                <button class="close-btn" id="closeDiffModalBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <pre id="diffContent" class="diff-content"></pre>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="closeDiffBtn">Close</button>
-                <button class="btn btn-success" id="mergeDiffBtn">Merge Changes</button>
-            </div>
+    <div
+      id="diffModal"
+      class="modal"
+    >
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2>Changes Preview</h2>
+          <button
+            class="close-btn"
+            id="closeDiffModalBtn"
+            >&times;</button
+          >
         </div>
+        <div class="modal-body">
+          <pre
+            id="diffContent"
+            class="diff-content"
+          ></pre>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            id="closeDiffBtn"
+            >Close</button
+          >
+          <button
+            class="btn btn-success"
+            id="mergeDiffBtn"
+            >Merge Changes</button
+          >
+        </div>
+      </div>
     </div>
 
     <script src="app.js"></script>
-</body>
+  </body>
 </html>

@@ -1,4 +1,16 @@
-import { useState } from 'react';
+import {
+  BranchesOutlined,
+  DeleteOutlined,
+  DownOutlined,
+  FolderOpenOutlined,
+  HomeOutlined,
+  MessageOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown, Menu } from 'antd';
+import type { MenuProps } from 'antd';
 
 interface SidebarProps {
   onOpenProject: () => void;
@@ -7,83 +19,116 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onOpenProject, onCloneFromUrl, currentWorkspace }: SidebarProps) {
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+  const workspaceItems: MenuProps['items'] = [
+    {
+      key: 'current',
+      label: currentWorkspace || 'Select workspace',
+      disabled: true,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'new',
+      label: 'New workspace',
+      icon: <PlusOutlined />,
+      onClick: onOpenProject,
+    },
+  ];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <button className="sidebar-item">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.438 1.157a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V9h5v5.5h2.563a.25.25 0 0 0 .25-.25V6.22a.25.25 0 0 0-.094-.195Z"/>
-          </svg>
-          <span>Home</span>
-        </button>
-      </div>
+    <div
+      style={{
+        width: 260,
+        background: 'var(--sidebar-bg, #f0f2f5)',
+        borderRight: '1px solid var(--sidebar-border, #d9d9d9)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        padding: '8px',
+      }}
+    >
+      <Menu
+        mode="inline"
+        style={{ background: 'transparent', border: 'none' }}
+        items={[
+          {
+            key: 'home',
+            icon: <HomeOutlined />,
+            label: 'Home',
+          },
+        ]}
+      />
 
-      <div className="sidebar-section">
-        <button
-          className="sidebar-workspace"
-          onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
+      <Dropdown
+        menu={{ items: workspaceItems }}
+        trigger={['click']}
+      >
+        <Button
+          block
+          style={{
+            marginTop: 8,
+            marginBottom: 8,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
-          <span className="workspace-name">{currentWorkspace || 'Select workspace'}</span>
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="currentColor"
-            style={{ transform: isWorkspaceOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              flex: 1,
+              textAlign: 'left',
+            }}
           >
-            <path d="M6 9L1 4h10z"/>
-          </svg>
-        </button>
+            {currentWorkspace || 'Select workspace'}
+          </span>
+          <DownOutlined />
+        </Button>
+      </Dropdown>
 
-        <button className="sidebar-item new-workspace" onClick={onOpenProject}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a.75.75 0 0 1 .75.75v6.5h6.5a.75.75 0 0 1 0 1.5h-6.5v6.5a.75.75 0 0 1-1.5 0v-6.5h-6.5a.75.75 0 0 1 0-1.5h6.5v-6.5A.75.75 0 0 1 8 0Z"/>
-          </svg>
-          <span>New workspace</span>
-        </button>
+      <div style={{ marginTop: 'auto', paddingTop: 8, borderTop: '1px solid var(--border-color, #d9d9d9)' }}>
+        <Menu
+          mode="inline"
+          style={{ background: 'transparent', border: 'none' }}
+          items={[
+            {
+              key: 'open',
+              icon: <FolderOpenOutlined />,
+              label: 'Open project',
+              onClick: onOpenProject,
+            },
+            {
+              key: 'clone',
+              icon: <BranchesOutlined />,
+              label: 'Clone from URL',
+              onClick: onCloneFromUrl,
+            },
+            {
+              key: 'messages',
+              icon: <MessageOutlined />,
+              label: 'Add repository',
+            },
+            {
+              key: 'delete',
+              icon: <DeleteOutlined />,
+              label: 'Delete',
+            },
+            {
+              key: 'more',
+              icon: <MoreOutlined />,
+              label: 'More options',
+            },
+            {
+              key: 'settings',
+              icon: <SettingOutlined />,
+              label: 'Settings',
+            },
+          ]}
+        />
       </div>
-
-      <div className="sidebar-footer">
-        <button className="sidebar-footer-item" onClick={onOpenProject} title="Open project">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M.513 1.513A1.75 1.75 0 0 1 1.75 1h3.5c.55 0 1.07.26 1.4.7l.9 1.2a.25.25 0 0 0 .2.1H13a1 1 0 0 1 1 1v.5H2.75a.75.75 0 0 0 0 1.5h11.978a1 1 0 0 1 .994 1.117L15 13.25A1.75 1.75 0 0 1 13.25 15H1.75A1.75 1.75 0 0 1 0 13.25V2.75c0-.464.184-.91.513-1.237Z"/>
-          </svg>
-          <span>Open project</span>
-        </button>
-
-        <button className="sidebar-footer-item" onClick={onCloneFromUrl} title="Clone from URL">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8.75.75V2h.985c.304 0 .603.08.867.231l1.29.736c.038.022.08.033.124.033h2.234a.75.75 0 0 1 0 1.5h-.427l2.111 4.692a.75.75 0 0 1-.154.838l-.53-.53.529.531-.001.002-.002.002-.006.006-.006.005-.01.01-.045.04c-.21.176-.441.327-.686.45C14.556 10.78 13.88 11 13 11a4.498 4.498 0 0 1-2.023-.454 3.544 3.544 0 0 1-.686-.45l-.045-.04-.016-.015-.006-.006-.004-.004v-.001a.75.75 0 0 1-.154-.838L12.178 4.5h-.162c-.305 0-.604-.079-.868-.231l-1.29-.736a.245.245 0 0 0-.124-.033H8.75V13h2.5a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5h2.5V3.5h-.984a.245.245 0 0 0-.124.033l-1.289.737c-.265.15-.564.23-.869.23h-.162l2.112 4.692a.75.75 0 0 1-.154.838l-.53-.53.529.531-.001.002-.002.002-.006.006-.016.015-.045.04c-.21.176-.441.327-.686.45C4.556 10.78 3.88 11 3 11a4.498 4.498 0 0 1-2.023-.454 3.544 3.544 0 0 1-.686-.45l-.045-.04-.016-.015-.006-.006-.004-.004v-.001a.75.75 0 0 1-.154-.838L2.178 4.5H1.75a.75.75 0 0 1 0-1.5h2.234a.249.249 0 0 0 .125-.033l1.288-.737c.265-.15.564-.23.869-.23h.984V.75a.75.75 0 0 1 1.5 0Zm2.945 8.477c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L13 6.327Zm-10 0c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L3 6.327Z"/>
-          </svg>
-          <span>Clone from URL</span>
-        </button>
-
-        <button className="sidebar-footer-item" title="Add repository">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z"/>
-          </svg>
-        </button>
-
-        <button className="sidebar-footer-item" title="Delete">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"/>
-          </svg>
-        </button>
-
-        <button className="sidebar-footer-item" title="More options">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/>
-          </svg>
-        </button>
-
-        <button className="sidebar-footer-item" title="Settings">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.038.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.038-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.327.204.5.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.5-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"/>
-          </svg>
-        </button>
-      </div>
-    </aside>
+    </div>
   );
 }

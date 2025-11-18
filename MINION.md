@@ -5,6 +5,7 @@ Minion is a web-based orchestration platform for managing multiple Claude AI age
 ## Overview
 
 Minion allows you to:
+
 - **Create multiple AI agents** that work on different tasks simultaneously
 - **Isolate workspaces** using git worktrees to prevent conflicts
 - **Orchestrate tasks** through an intuitive web interface
@@ -113,6 +114,7 @@ Navigate to `http://localhost:3000` in your browser.
 4. Click **"Create Agent"**
 
 The agent will be created with:
+
 - A unique ID
 - An isolated git worktree at `.minion-worktrees/<agent-id>`
 - A dedicated branch `minion/<agent-name>-<short-id>`
@@ -125,6 +127,7 @@ The agent will be created with:
 4. Click **"Assign Task"**
 
 The agent will:
+
 - Start working on the task using Claude Agent SDK
 - Update its status in real-time
 - Make changes in its isolated workspace
@@ -162,6 +165,7 @@ Environment Variables:
 #### Agents
 
 - `POST /api/agents` - Create a new agent
+
   ```json
   {
     "name": "Agent Name",
@@ -176,6 +180,7 @@ Environment Variables:
 #### Tasks
 
 - `POST /api/agents/:id/tasks` - Assign a task to an agent
+
   ```json
   {
     "description": "Task description",
@@ -189,6 +194,7 @@ Environment Variables:
 
 - `GET /api/agents/:id/diff?target=main` - Get diff for agent's changes
 - `POST /api/agents/:id/merge` - Merge agent's branch
+
   ```json
   {
     "targetBranch": "main",
@@ -246,7 +252,7 @@ public/
 ├── styles.css            # Styling
 └── app.js                # Frontend JavaScript
 
-src/minion-cli.ts      # CLI entry point
+src/index.ts      # CLI entry point
 ```
 
 ### Building
@@ -302,6 +308,7 @@ private async runClaudeAgent(prompt: string, workingDirectory: string): Promise<
 ### Parallel Feature Development
 
 Create multiple agents to work on different features simultaneously:
+
 - Agent 1: "Implement user authentication"
 - Agent 2: "Add data export functionality"
 - Agent 3: "Create responsive mobile layout"
@@ -311,6 +318,7 @@ Each agent works in isolation, and you can merge changes as they complete.
 ### Bug Triage
 
 Assign different bugs to different agents:
+
 - Agent 1: "Fix memory leak in data processing"
 - Agent 2: "Resolve login redirect issue"
 - Agent 3: "Fix styling bug on dashboard"
@@ -318,6 +326,7 @@ Assign different bugs to different agents:
 ### Code Exploration
 
 Use agents to explore and document different parts of your codebase:
+
 - Agent 1: "Document the API layer"
 - Agent 2: "Create architecture diagrams for the frontend"
 - Agent 3: "Write integration tests for payment flow"
@@ -334,6 +343,7 @@ Use agents to explore and document different parts of your codebase:
 ### "Not a git repository" Error
 
 Ensure you're running Minion from inside a git repository:
+
 ```bash
 git init  # If needed
 minion
@@ -342,6 +352,7 @@ minion
 ### WebSocket Connection Failed
 
 Check that:
+
 1. The server is running
 2. No firewall is blocking the port
 3. The port is not already in use
@@ -349,6 +360,7 @@ Check that:
 ### Agent Creation Fails
 
 Verify:
+
 1. ANTHROPIC_API_KEY is set
 2. You have sufficient API credits
 3. The repository is not in a detached HEAD state

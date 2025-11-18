@@ -1,3 +1,5 @@
+import { Modal, message } from 'antd';
+
 interface DiffModalProps {
   isOpen: boolean;
   agentId: string | null;
@@ -7,48 +9,52 @@ interface DiffModalProps {
 }
 
 export function DiffModal({ isOpen, agentId, diff, onClose, onMerge }: DiffModalProps) {
-  if (!isOpen || !agentId) return null;
-
   const handleMerge = async () => {
-    if (!confirm('Are you sure you want to merge these changes into the main branch?')) {
-      return;
-    }
+    if (!agentId) return;
 
-    try {
-      await onMerge(agentId);
-      onClose();
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-    }
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    Modal.confirm({
+      title: 'Merge Changes',
+      content: 'Are you sure you want to merge these changes into the main branch?',
+      okText: 'Merge',
+      okType: 'primary',
+      onOk: async () => {
+        try {
+          await onMerge(agentId);
+          message.success('Changes merged successfully!');
+          onClose();
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          message.error(`Error: ${msg}`);
+        }
+      },
+    });
   };
 
   return (
-    <div className="modal active" onClick={handleBackdropClick}>
-      <div className="modal-content modal-large">
-        <div className="modal-header">
-          <h2>Changes Preview</h2>
-          <button className="close-btn" onClick={onClose}>
-            &times;
-          </button>
-        </div>
-        <div className="modal-body">
-          <pre className="diff-content">{diff || 'No changes yet'}</pre>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Close
-          </button>
-          <button className="btn btn-success" onClick={handleMerge}>
-            Merge Changes
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      title="Changes Preview"
+      open={isOpen && !!agentId}
+      onCancel={onClose}
+      width={900}
+      okText="Merge Changes"
+      onOk={handleMerge}
+      okButtonProps={{ type: 'primary' }}
+    >
+      <pre
+        style={{
+          background: 'var(--bg-primary, #f5f5f5)',
+          padding: 16,
+          borderRadius: 4,
+          overflow: 'auto',
+          maxHeight: 500,
+          fontFamily: 'Monaco, Courier New, monospace',
+          fontSize: 12,
+          lineHeight: 1.5,
+          border: '1px solid var(--border-color, #d9d9d9)',
+        }}
+      >
+        {diff || 'No changes yet'}
+      </pre>
+    </Modal>
   );
 }

@@ -13,7 +13,7 @@ export interface Agent {
 export interface WebSocketMessage {
   type: 'initial_state' | 'agent_status' | 'task_update' | 'agent_log' | 'error';
   agentId?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export interface CreateAgentRequest {

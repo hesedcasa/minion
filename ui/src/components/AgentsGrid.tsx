@@ -1,5 +1,7 @@
-import { AgentCard } from './AgentCard';
+import { Col, Row } from 'antd';
+
 import type { Agent } from '../types/agent';
+import { AgentCard } from './AgentCard';
 
 interface AgentsGridProps {
   agents: Agent[];
@@ -9,37 +11,28 @@ interface AgentsGridProps {
   onRemoveAgent: (agentId: string) => void;
 }
 
-export function AgentsGrid({
-  agents,
-  onAssignTask,
-  onViewDiff,
-  onStopAgent,
-  onRemoveAgent,
-}: AgentsGridProps) {
-  if (agents.length === 0) {
-    return (
-      <div className="agents-grid">
-        <div className="empty-state">
-          <div className="empty-icon">🎼</div>
-          <h2>No agents yet</h2>
-          <p>Create your first agent to start orchestrating your AI coding team</p>
-        </div>
-      </div>
-    );
-  }
-
+export function AgentsGrid({ agents, onAssignTask, onViewDiff, onStopAgent, onRemoveAgent }: AgentsGridProps) {
   return (
-    <div className="agents-grid">
-      {agents.map((agent) => (
-        <AgentCard
+    <Row gutter={[16, 16]}>
+      {agents.map(agent => (
+        <Col
           key={agent.id}
-          agent={agent}
-          onAssignTask={onAssignTask}
-          onViewDiff={onViewDiff}
-          onStopAgent={onStopAgent}
-          onRemoveAgent={onRemoveAgent}
-        />
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={8}
+          xxl={6}
+        >
+          <AgentCard
+            agent={agent}
+            onAssignTask={onAssignTask}
+            onViewDiff={onViewDiff}
+            onStopAgent={onStopAgent}
+            onRemoveAgent={onRemoveAgent}
+          />
+        </Col>
       ))}
-    </div>
+    </Row>
   );
 }
