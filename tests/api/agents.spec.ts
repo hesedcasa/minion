@@ -47,21 +47,6 @@ test.describe('Agents API', () => {
       expect(error).toHaveProperty('error');
       expect(error.error).toContain('name is required');
     });
-
-    test('should create agent with custom API key', async () => {
-      const agentName = `test-agent-with-key-${Date.now()}`;
-      const customApiKey = 'test-api-key';
-      const response = await apiHelpers.createAgent(agentName, customApiKey);
-
-      // Note: This might fail if the API key is invalid, but we're testing the endpoint
-      // The status could be 201 (success) or 500 (if key validation fails)
-      expect([201, 500]).toContain(response.status());
-
-      if (response.status() === 201) {
-        const agent = await response.json();
-        createdAgentIds.push(agent.id);
-      }
-    });
   });
 
   test.describe('GET /api/agents', () => {

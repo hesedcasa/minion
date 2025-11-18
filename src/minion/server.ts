@@ -58,12 +58,12 @@ export class MinionServer {
     // Agent routes
     router.post('/agents', async (req: Request, res: Response) => {
       try {
-        const { name, apiKey } = req.body;
+        const { name } = req.body;
         if (!name) {
           res.status(400).json({ error: 'Agent name is required' });
           return;
         }
-        const agent = await this.agentManager.createAgent(name, apiKey);
+        const agent = await this.agentManager.createAgent(name);
         res.status(201).json(agent);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);

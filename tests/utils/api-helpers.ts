@@ -12,9 +12,9 @@ export class ApiHelpers {
   /**
    * Create a test agent
    */
-  async createAgent(name: string, apiKey?: string) {
+  async createAgent(name: string) {
     const response = await this.request.post(`${BASE_URL}/api/agents`, {
-      data: { name, apiKey },
+      data: { name },
     });
     return response;
   }
