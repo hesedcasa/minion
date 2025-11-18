@@ -1,28 +1,12 @@
 #!/usr/bin/env node
 
-import { wrapper } from './cli/index.js';
-import { parseArguments } from './utils/index.js';
-
 /**
- * Main entry point for the CLI
+ * This entry point has been deprecated.
+ * Please use 'minion' command to start the Minion orchestrator.
+ *
+ * Run: npx minion
  */
-async function main(): Promise<void> {
-  // Parse command line arguments
-  const args = process.argv.slice(2);
-  const shouldContinue = await parseArguments(args);
 
-  if (shouldContinue) {
-    return;
-  }
-
-  // Start interactive CLI mode
-  const cli = new wrapper();
-  await cli.connect();
-  await cli.start();
-}
-
-// Run the CLI
-main().catch(error => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});
+console.log('This CLI has been updated. Please use the "minion" command instead.');
+console.log('Run: npx minion');
+process.exit(0);

@@ -1,44 +1,33 @@
 {
   "name": "minion",
   "version": "1.0.0",
-  "description": "CLI tool to connect and interact with Context7 MCP server for up-to-date code documentation, plus Minion - an AI agent orchestrator for managing multiple Claude agents",
-  "main": "dist/index.js",
+  "description": "Minion - an AI agent orchestrator for managing multiple Claude agents",
+  "main": "dist/minion-cli.js",
   "bin": {
-    "minion": "dist/index.js",
     "minion": "dist/minion-cli.js"
   },
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/index.ts",
-    "dev": "tsx src/index.ts",
-    "minion": "tsx src/minion-cli.ts",
-    "minion:dev": "tsx src/minion-cli.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
+    "start": "tsx src/minion-cli.ts",
+    "dev": "tsx src/minion-cli.ts",
     "find-deadcode": "ts-prune",
     "format": "eslint --cache --fix --quiet . && prettier --write --cache .",
     "pre-commit": "npm run format && npm run find-deadcode"
   },
   "keywords": [
-    "context7",
-    "mcp",
-    "documentation",
-    "cli",
-    "upstash",
     "minion",
     "ai-agents",
     "claude",
     "orchestration",
-    "agent-sdk"
+    "agent-sdk",
+    "git-worktrees",
+    "parallel-development"
   ],
   "author": "Hesed",
   "license": "Apache-2.0",
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.44",
-    "@modelcontextprotocol/sdk": "^1.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/ws": "^8.18.1",
@@ -50,8 +39,6 @@
     "@eslint/js": "^9.39.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@types/node": "^24.10.1",
-    "@vitest/coverage-v8": "^4.0.9",
-    "@vitest/ui": "^4.0.9",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "jiti": "^2.6.1",
@@ -59,8 +46,7 @@
     "ts-prune": "^0.10.3",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
-    "typescript-eslint": "^8.46.4",
-    "vitest": "^4.0.9"
+    "typescript-eslint": "^8.46.4"
   },
   "repository": {
     "type": "git",
