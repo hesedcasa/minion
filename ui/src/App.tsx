@@ -204,7 +204,14 @@ function App() {
       theme={{
         algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
         token: {
-          colorPrimary: '#6366f1',
+          colorPrimary: '#fdb813',
+          colorInfo: '#007acc',
+          colorSuccess: '#10b981',
+          colorWarning: '#ff9500',
+          colorError: '#ef4444',
+          borderRadius: 8,
+          colorBgContainer: isDarkMode ? '#242424' : '#ffffff',
+          colorBorder: isDarkMode ? '#3e3e42' : '#e0d4a8',
         },
       }}
     >
