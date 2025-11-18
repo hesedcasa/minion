@@ -11,17 +11,11 @@ npm install
 # Build the TypeScript source
 npm run build
 
-# Run the CLI (development mode with tsx)
+# Run Minion
 npm start
 
-# Run in development (same as start)
+# Run in development
 npm run dev
-
-# Run tests
-npm test                    # Run all tests once
-npm run test:watch          # Run tests in watch mode
-npm run test:ui             # Run tests with UI
-npm run test:coverage       # Run tests with coverage report
 
 # Code quality
 npm run format              # Format code with ESLint and Prettier
@@ -29,97 +23,75 @@ npm run find-deadcode       # Find unused exports with ts-prune
 npm run pre-commit          # Run format + find-deadcode
 ```
 
-**Note**: The CLI connects to the Context7 MCP server (`@upstash/context7-mcp`) to fetch up-to-date library documentation.
-
 ## Project Architecture
 
-This is a **modular TypeScript CLI** that provides a REPL interface for querying library documentation through the Model Context Protocol (MCP) via Context7.
+This is a **TypeScript-based AI agent orchestrator** that manages multiple Claude AI agents working in parallel on a codebase using git worktrees.
 
 ### Project Structure
 
 ```
 src/
-├── index.ts (28 lines)                    # Main entry point
-├── cli/
-│   ├── index.ts                           # Barrel export
-│   └── wrapper.ts (207 lines)             # CLI class with REPL logic
-├── commands/
-│   ├── index.ts                           # Barrel export
-│   ├── helpers.ts (45 lines)              # Command info helpers
-│   └── runner.ts (55 lines)               # Headless command execution
-├── config/
-│   ├── index.ts                           # Barrel export
-│   └── constants.ts (44 lines)            # Command definitions & server config
-└── utils/
-    ├── index.ts                           # Barrel export
-    └── argParser.ts (74 lines)            # Command-line argument parser
+├── minion-cli.ts (entry point)        # Main CLI entry point
+├── index.ts                           # Legacy entry point (redirects to minion-cli)
+└── minion/
+    ├── index.ts                       # Barrel export
+    ├── agentManager.ts                # Agent lifecycle management
+    ├── workspaceManager.ts            # Git worktree operations
+    ├── server.ts                      # Express + WebSocket server
+    └── types.ts                       # TypeScript type definitions
 
-tests/
-├── unit/
-│   ├── commands/
-│   │   ├── helpers.test.ts                # Tests for command helpers
-│   │   └── runner.test.ts                 # Tests for headless runner
-│   ├── config/constants.test.ts           # Tests for constants
-│   └── utils/argParser.test.ts            # Tests for argument parsing
-└── integration/
-    └── cli/wrapper.test.ts                # Tests for CLI wrapper
+public/
+├── index.html                         # Web UI
+├── styles.css                         # Styling
+└── app.js                             # Frontend JavaScript
 ```
 
 ### Core Components
 
-#### Entry Point (`src/index.ts`)
+#### Entry Point (`src/minion-cli.ts`)
 
-- Bootstraps the application
-- Parses command-line arguments
-- Routes to interactive or headless mode
+- Bootstraps the Minion server
+- Parses command-line arguments (port, repository path)
+- Initializes Express server with WebSocket support
+- Serves the web UI
 
-#### CLI Module (`src/cli/`)
+#### Minion Module (`src/minion/`)
 
-- **wrapper class**: Main orchestrator managing:
-  - `connect()` - Establishes MCP server connection using `@modelcontextprotocol/sdk` client and stdio transport
-  - `start()` - Initiates interactive REPL with readline interface
-  - `handleCommand()` - Parses and processes user commands
-  - `callTool()` - Executes MCP tools with JSON argument parsing
-  - `disconnect()` - Graceful cleanup on exit signals (SIGINT/SIGTERM)
+- **agentManager.ts** - Manages Claude Agent SDK instances
+  - `createAgent()` - Creates new agent in isolated worktree
+  - `sendMessage()` - Sends messages to agents
+  - `deleteAgent()` - Cleans up agent and worktree
+  - `listAgents()` - Returns all active agents
 
-#### Commands Module (`src/commands/`)
+- **workspaceManager.ts** - Git worktree operations
+  - `createWorktree()` - Creates isolated git worktree
+  - `deleteWorktree()` - Removes worktree
+  - `listWorktrees()` - Lists all worktrees
+  - `mergeWorktree()` - Merges worktree changes back
 
-- `helpers.ts` - Display command information and help
-  - `printAvailableCommands()` - Lists all 2 available commands
-  - `printCommandDetail(command)` - Shows detailed help for specific command
-- `runner.ts` - Execute commands in headless mode
-  - `runCommand(command, arg, flag)` - Non-interactive command execution
+- **server.ts** - Web server with WebSocket
+  - Express routes for agent operations
+  - WebSocket connections for real-time updates
+  - Static file serving for web UI
 
-#### Config Module (`src/config/`)
+- **types.ts** - TypeScript definitions
+  - Agent types
+  - Message types
+  - Server configuration types
 
-- `constants.ts` - Centralized configuration
-  - `DEFAULT_MCP_SERVER` - MCP server connection settings
-  - `COMMANDS[]` - Array of 2 available command names
-  - `COMMANDS_INFO[]` - Brief descriptions for each command
-  - `COMMANDS_DETAIL[]` - Detailed parameter documentation
+### Key Features
 
-#### Utils Module (`src/utils/`)
-
-- `argParser.ts` - Command-line argument handling
-  - `parseArguments(args)` - Parses CLI flags and routes execution
-
-### MCP Client Integration
-
-- Uses `@modelcontextprotocol/sdk` for protocol communication
-- Connects to `@upstash/context7-mcp` server via stdio
-- Discovers and lists 2 available documentation tools
-
-### REPL Interface
-
-- Custom prompt: `context7>`
-- Special commands: `help`, `commands`, `clear`, `exit/quit/q`
-- Tool invocation: Direct tool name with JSON arguments
+- **Multi-Agent Orchestration**: Run multiple Claude agents in parallel
+- **Git Worktrees**: Each agent works in isolated git worktree
+- **Real-Time Updates**: WebSocket communication for live status
+- **Web UI**: Modern interface for managing agents
+- **Conflict-Free Development**: Isolated workspaces prevent conflicts
 
 ### TypeScript Configuration
 
 - **Target**: ES2022 modules (package.json `"type": "module"`)
-- **Output**: Compiles to `dist/` directory with modular structure
-- **Declarations**: Generates `.d.ts` files for all modules
+- **Output**: Compiles to `dist/` directory
+- **Declarations**: Generates `.d.ts` files
 - **Source Maps**: Enabled for debugging
 
 ## Common Development Tasks
@@ -137,159 +109,89 @@ npm run dev
 
 # After building, use the compiled binary
 npm link  # Link globally
-minion  # Use the CLI command
+minion    # Use the CLI command
 ```
 
-### Available Tools
-
-The CLI exposes **2 documentation tools** from the Context7 MCP server:
-
-- **resolve-library-id**: Resolves a package/product name to a Context7-compatible library ID
-- **get-library-docs**: Fetches up-to-date documentation for a specific library
-
-### Command Examples
+### Environment Setup
 
 ```bash
-# Start the CLI in interactive mode
-npm start
+# Required: Set your Anthropic API key
+export ANTHROPIC_API_KEY=sk-ant-your-api-key
 
-# Inside the REPL:
-context7> commands                          # List all 2 commands
-context7> help                              # Show help
-context7> resolve-library-id {"name":"mongodb"}  # Resolve library ID
-context7> get-library-docs {"context7CompatibleLibraryID":"/mongodb/docs"}  # Get docs
-context7> get-library-docs {"context7CompatibleLibraryID":"/vercel/next.js","topic":"routing"}  # Get topic-specific docs
-context7> exit                              # Exit
+# Optional: Specify repository path
+minion --repo /path/to/repo
 
-# Headless mode (one-off commands):
-npx minion resolve-library-id '{"name":"mongodb"}'
-npx minion get-library-docs '{"context7CompatibleLibraryID":"/mongodb/docs"}'
-npx minion --commands        # List all commands
-npx minion resolve-library-id -h  # Command-specific help
-npx minion --help            # General help
-npx minion --version         # Show version
+# Optional: Specify port
+minion --port 8080
 ```
 
 ## Code Structure & Module Responsibilities
 
-### Entry Point (`index.ts`)
+### Entry Point (`minion-cli.ts`)
 
-- Minimal bootstrapper
-- Imports and coordinates other modules
-- Handles top-level error catching
+- Main bootstrapper for the Minion server
+- Command-line argument parsing
+- Server initialization
+- Environment variable handling
 
-### CLI Class (`cli/wrapper.ts`)
+### Agent Manager (`minion/agentManager.ts`)
 
-- Interactive REPL management
-- MCP server connection lifecycle
-- User command processing
-- Tool execution with result formatting
+- Agent lifecycle (create, message, delete)
+- Claude Agent SDK integration
+- Agent state management
+- Message routing
 
-### Command Helpers (`commands/helpers.ts`)
+### Workspace Manager (`minion/workspaceManager.ts`)
 
-- Pure functions for displaying command information
-- No external dependencies except config
-- Easy to test
+- Git worktree operations
+- Branch management
+- Merge operations
+- Cleanup and validation
 
-### Command Runner (`commands/runner.ts`)
+### Server (`minion/server.ts`)
 
-- Headless/non-interactive execution
-- Single command → result → exit pattern
-- Independent MCP client instance
-
-### Constants (`config/constants.ts`)
-
-- Single source of truth for all configuration
-- Command definitions (names, descriptions, parameters)
-- Server connection settings
-- No logic, just data
-
-### Argument Parser (`utils/argParser.ts`)
-
-- CLI flag parsing (--help, --version, --commands, etc.)
-- Routing logic for different execution modes
-- Command detection and validation
+- Express HTTP server
+- WebSocket server
+- REST API endpoints
+- Static file serving
 
 ### Key Implementation Details
 
 - **Barrel Exports**: Each module directory has `index.ts` exporting public APIs
 - **ES Modules**: All imports use `.js` extensions (TypeScript requirement)
-- **Argument Parsing**: Supports JSON arguments for tool parameters
-- **Tool Arguments**: Accepts JSON objects (e.g., `{"key": "value"}`)
-- **Connection Management**: Uses `@modelcontextprotocol/sdk` with StdioClientTransport
-- **Signal Handling**: Graceful shutdown on Ctrl+C (SIGINT) and SIGTERM
-- **Error Handling**: Try-catch blocks for connection and tool execution with user-friendly messages
+- **Git Integration**: Uses git CLI commands for worktree management
+- **Real-Time Updates**: WebSocket broadcasts for agent status changes
+- **Error Handling**: Try-catch blocks with user-friendly messages
+- **API Key Management**: Environment variable for Anthropic API key
 
 ## Dependencies
 
 **Runtime**:
 
-- `@modelcontextprotocol/sdk@^1.0.0` - Official MCP client SDK
+- `@anthropic-ai/claude-agent-sdk@^0.1.44` - Claude Agent SDK
+- `express@^5.1.0` - Web server
+- `ws@^8.18.3` - WebSocket server
+- `cors@^2.8.5` - CORS middleware
+- `@types/express@^5.0.5` - Express types
+- `@types/ws@^8.18.1` - WebSocket types
+- `@types/cors@^2.8.19` - CORS types
 
 **Development**:
 
 - `typescript@^5.0.0` - TypeScript compiler
 - `tsx@^4.0.0` - TypeScript execution runtime
 - `@types/node@^24.10.1` - Node.js type definitions
-- `vitest@^4.0.9` - Test framework
 - `eslint@^9.39.1` - Linting
 - `prettier@3.6.2` - Code formatting
 - `ts-prune@^0.10.3` - Find unused exports
 
-## Testing
-
-This project uses **Vitest** for testing with the following configuration:
-
-- **Test Framework**: Vitest with globals enabled
-- **Test Files**: `tests/**/*.test.ts`
-- **Coverage**: V8 coverage provider with text, JSON, and HTML reports
-
-### Running Tests
-
-```bash
-# Run all tests once
-npm test
-
-# Watch mode for development
-npm run test:watch
-
-# Run with UI
-npm run test:ui
-
-# Generate coverage report
-npm run test:coverage
-```
-
-### Test Structure
-
-```
-tests/
-├── unit/
-│   ├── commands/
-│   │   ├── helpers.test.ts      # Tests for printAvailableCommands, printCommandDetail, getCurrentVersion
-│   │   └── runner.test.ts       # Tests for headless command execution
-│   ├── config/constants.test.ts # Tests for configuration constants
-│   └── utils/argParser.test.ts  # Tests for CLI argument parsing
-└── integration/
-    └── cli/wrapper.test.ts      # Tests for CLI wrapper class
-```
-
-### Writing Tests
-
-Each test file follows standard Vitest patterns:
-
-- Use `describe()` blocks to group related tests
-- Use `beforeEach()`/`afterEach()` for setup/teardown
-- Mock `console.log` when testing print functions
-- Use `vi.spyOn()` and `vi.clearAllMocks()` for mocking
-
 ## Important Notes
 
-1. **Modular Structure**: Code is organized into focused modules for better maintainability
+1. **Modular Structure**: Code is organized into focused modules
 2. **ES2022 Modules**: Project uses `"type": "module"` - no CommonJS
-3. **MCP Ecosystem**: This CLI is a client that connects to the `@upstash/context7-mcp` server package
-4. **Barrel Exports**: Use `from './module/index.js'` for cleaner imports
-5. **No Breaking Changes**: Refactoring maintains 100% backward compatibility
+3. **Agent SDK Integration**: Uses official Claude Agent SDK
+4. **Git Worktrees**: Requires git repository for operation
+5. **API Key Required**: Must set ANTHROPIC_API_KEY environment variable
 
 ## Commit Message Convention
 
@@ -305,11 +207,10 @@ Each test file follows standard Vitest patterns:
 **Examples:**
 
 ```
-feat: add pagination support for get-library-docs command
-fix: resolve JSON parsing error in headless mode
-docs: update README with new command examples
-refactor: extract MCP client connection logic into separate function
-test: add unit tests for argParser edge cases
+feat: add parallel agent execution support
+fix: resolve git worktree cleanup issue
+docs: update README with environment setup
+refactor: extract git operations into separate module
 chore: update dependencies to latest versions
 ```
 
@@ -317,32 +218,19 @@ When creating pull requests, the PR title must follow this format. The PR descri
 
 ## Development Tips
 
-### Adding a New Command
+### Working with Agents
 
-1. Add command name to `COMMANDS` array in `config/constants.ts`
-2. Add description to `COMMANDS_INFO` array (same index)
-3. Add parameter details to `COMMANDS_DETAIL` array (same index)
-4. Done! The CLI will automatically discover it
+1. Each agent runs in its own git worktree
+2. Agents are isolated and can work in parallel
+3. Changes can be merged back to main branch
+4. WebSocket provides real-time agent status
 
-### Adding a New CLI Flag
+### Working with Git Worktrees
 
-1. Edit `utils/argParser.ts`
-2. Add flag detection in the `parseArguments()` function
-3. Implement the flag's behavior
-4. Update help text if needed
-
-### Modifying CLI Behavior
-
-1. Interactive mode logic: `cli/wrapper.ts`
-2. Headless mode logic: `commands/runner.ts`
-3. Argument routing: `utils/argParser.ts`
-
-### Working with Modules
-
-- Each module is self-contained and independently testable
-- Use barrel exports for clean imports: `import { X } from './module/index.js'`
-- Follow single responsibility principle - one concern per file
-- Keep dependencies flowing in one direction (no circular dependencies)
+1. Worktrees are created in `.minion/` directory
+2. Each worktree is on its own branch
+3. Cleanup removes both worktree and branch
+4. Merge operations bring changes back
 
 ### Building and Testing
 
@@ -350,19 +238,11 @@ When creating pull requests, the PR title must follow this format. The PR descri
 # Clean build
 rm -rf dist && npm run build
 
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Quick test of the CLI
+# Test the CLI
 npm start
 
 # Test specific functionality (after building)
-node dist/index.js --help
-node dist/index.js --commands
-node dist/index.js resolve-library-id -h
+node dist/minion-cli.js --help
 ```
 
 ### Common Patterns
@@ -370,9 +250,8 @@ node dist/index.js resolve-library-id -h
 **Importing from modules:**
 
 ```typescript
-import { wrapper } from './cli/index.js';
-import { COMMANDS, DEFAULT_MCP_SERVER } from './config/index.js';
-import { parseArguments } from './utils/index.js';
+import { createAgent, deleteAgent } from './minion/index.js';
+import type { Agent, AgentMessage } from './minion/types.js';
 ```
 
 **Error handling:**
@@ -382,28 +261,19 @@ try {
   // Operation
 } catch (error: any) {
   console.error('Error:', error.message || error);
-  process.exit(1);
+  res.status(500).json({ error: error.message });
 }
 ```
 
-**MCP tool call:**
+**WebSocket broadcast:**
 
 ```typescript
-const result = await this.client.callTool(
-  {
-    name: toolName,
-    arguments: arguments_,
-  },
-  CallToolResultSchema
-);
+wss.clients.forEach(client => {
+  if (client.readyState === WebSocket.OPEN) {
+    client.send(JSON.stringify({ type: 'update', data }));
+  }
+});
 ```
-
-## Performance Considerations
-
-- The modular structure has **no performance impact** (tree-shaking applies)
-- Same runtime behavior as before
-- Same bundle size
-- Same startup time
 
 ## Code Quality Tools
 
@@ -437,5 +307,3 @@ Run formatting and dead code detection before committing:
 ```bash
 npm run pre-commit
 ```
-
-- use conventional commit message when creating PR
