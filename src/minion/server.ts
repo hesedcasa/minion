@@ -43,7 +43,8 @@ export class MINIONServer {
 	private setupMiddleware(): void {
 		this.app.use(cors());
 		this.app.use(express.json());
-		this.app.use(express.static(join(__dirname, '../../public')));
+		// Serve React build (production) or fallback to public (development)
+		this.app.use(express.static(join(__dirname, '../../dist-ui')));
 	}
 
 	private setupRoutes(): void {
@@ -151,6 +152,11 @@ export class MINIONServer {
 		});
 
 		this.app.use('/api', router);
+
+		// SPA fallback - serve index.html for all non-API routes
+		this.app.get('*', (req: Request, res: Response) => {
+			res.sendFile(join(__dirname, '../../dist-ui/index.html'));
+		});
 	}
 
 	private setupWebSocket(): void {
