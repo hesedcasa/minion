@@ -40,10 +40,30 @@ src/
     ├── server.ts                      # Express + WebSocket server
     └── types.ts                       # TypeScript type definitions
 
-public/
-├── index.html                         # Web UI
-├── styles.css                         # Styling
-└── app.js                             # Frontend JavaScript
+ui/                                    # React UI (built with Vite)
+├── src/
+│   ├── components/                    # React components
+│   │   ├── Header.tsx
+│   │   ├── Controls.tsx
+│   │   ├── AgentCard.tsx
+│   │   ├── AgentsGrid.tsx
+│   │   ├── ConnectionStatus.tsx
+│   │   └── modals/
+│   │       ├── CreateAgentModal.tsx
+│   │       ├── AssignTaskModal.tsx
+│   │       └── DiffModal.tsx
+│   ├── hooks/
+│   │   └── useWebSocket.ts           # WebSocket hook for real-time updates
+│   ├── types/
+│   │   └── agent.ts                  # TypeScript type definitions
+│   ├── App.tsx                       # Main App component
+│   ├── App.css                       # Styling
+│   └── main.tsx                      # React entry point
+├── index.html                        # HTML template
+└── tsconfig.json                     # TypeScript config for UI
+
+dist/                                 # Compiled server code (TypeScript)
+dist-ui/                              # Built React UI (production)
 ```
 
 ### Core Components
@@ -72,7 +92,7 @@ public/
 - **server.ts** - Web server with WebSocket
   - Express routes for agent operations
   - WebSocket connections for real-time updates
-  - Static file serving for web UI
+  - Serves built React UI from dist-ui/
 
 - **types.ts** - TypeScript definitions
   - Agent types
@@ -84,7 +104,7 @@ public/
 - **Multi-Agent Orchestration**: Run multiple Claude agents in parallel
 - **Git Worktrees**: Each agent works in isolated git worktree
 - **Real-Time Updates**: WebSocket communication for live status
-- **Web UI**: Modern interface for managing agents
+- **React UI**: Modern React-based interface for managing agents
 - **Conflict-Free Development**: Isolated workspaces prevent conflicts
 
 ### TypeScript Configuration
@@ -99,13 +119,22 @@ public/
 ### Building and Running
 
 ```bash
-# Build TypeScript to JavaScript
+# Build everything (server + UI)
 npm run build
 
-# Run with tsx (no build step needed)
+# Build server only
+npm run build:server
+
+# Build UI only
+npm run build:ui
+
+# Run server with tsx (no build step needed)
 npm start
 # or
 npm run dev
+
+# Run UI dev server (with hot reload)
+npm run dev:ui
 
 # After building, use the compiled binary
 npm link  # Link globally
@@ -172,6 +201,8 @@ minion --port 8080
 - `express@^5.1.0` - Web server
 - `ws@^8.18.3` - WebSocket server
 - `cors@^2.8.5` - CORS middleware
+- `react@^19.2.0` - React library
+- `react-dom@^19.2.0` - React DOM renderer
 - `@types/express@^5.0.5` - Express types
 - `@types/ws@^8.18.1` - WebSocket types
 - `@types/cors@^2.8.19` - CORS types
@@ -180,7 +211,11 @@ minion --port 8080
 
 - `typescript@^5.0.0` - TypeScript compiler
 - `tsx@^4.0.0` - TypeScript execution runtime
+- `vite@^7.2.2` - Frontend build tool
+- `@vitejs/plugin-react@^5.1.1` - Vite React plugin
 - `@types/node@^24.10.1` - Node.js type definitions
+- `@types/react@^19.2.6` - React type definitions
+- `@types/react-dom@^19.2.3` - React DOM type definitions
 - `eslint@^9.39.1` - Linting
 - `prettier@3.6.2` - Code formatting
 - `ts-prune@^0.10.3` - Find unused exports
@@ -231,6 +266,25 @@ When creating pull requests, the PR title must follow this format. The PR descri
 2. Each worktree is on its own branch
 3. Cleanup removes both worktree and branch
 4. Merge operations bring changes back
+
+### Working with the React UI
+
+1. **Development Mode**: Run `npm run dev:ui` to start Vite dev server with hot reload on port 5173
+   - Changes to React components update instantly
+   - Proxies API requests to backend server (port 3000)
+   - WebSocket connections for real-time updates
+
+2. **Production Build**: Run `npm run build:ui` to create optimized production build
+   - Output goes to `dist-ui/` directory
+   - Server automatically serves from `dist-ui/` in production
+
+3. **Component Structure**:
+   - Components in `ui/src/components/`
+   - Hooks in `ui/src/hooks/`
+   - Types in `ui/src/types/`
+   - Modals use React state for open/close
+
+4. **Styling**: CSS is in `ui/src/App.css` (same styles as original, unchanged)
 
 ### Building and Testing
 

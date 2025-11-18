@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:server:*)",
+      "Bash(npm start)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__handle_dialog",
+      "Bash(git worktree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run find-deadcode:*)",
+      "mcp__chrome-devtools__close_page",
+      "Bash(npm run build:ui:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
