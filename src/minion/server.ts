@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type WebSocket, WebSocketServer } from 'ws';
 
+import { initDatabase, closeDatabase, testConnection } from '../db/index.js';
 import { AgentManager } from './agentManager.js';
 import type { MergeRequest, TaskRequest, WebSocketMessage } from './types.js';
 import { WorkspaceManager } from './workspaceManager.js';
@@ -30,7 +31,7 @@ export class MinionServer {
     this.server = createServer(this.app);
     this.wss = new WebSocketServer({ server: this.server });
 
-    // Initialize managers
+    // Initialize managers (database will be initialized in start method)
     this.workspaceManager = new WorkspaceManager(baseRepoPath);
     this.agentManager = new AgentManager(this.workspaceManager, apiKey);
 
@@ -58,12 +59,12 @@ export class MinionServer {
     // Agent routes
     router.post('/agents', async (req: Request, res: Response) => {
       try {
-        const { name, apiKey } = req.body;
+        const { name } = req.body;
         if (!name) {
           res.status(400).json({ error: 'Agent name is required' });
           return;
         }
-        const agent = await this.agentManager.createAgent(name, apiKey);
+        const agent = await this.agentManager.createAgent(name);
         res.status(201).json(agent);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
@@ -238,6 +239,29 @@ export class MinionServer {
   }
 
   async start(): Promise<void> {
+    // Initialize database
+    try {
+      console.log('🗄️  Initializing database...');
+      initDatabase();
+
+      // Test connection
+      const connected = await testConnection();
+      if (!connected) {
+        console.warn('⚠️  Database connection test failed. Server will start but persistence may not work.');
+        console.warn(
+          '   Check DATABASE_URL or DB_* environment variables and ensure PostgreSQL is running.'
+        );
+      } else {
+        console.log('✅ Database connected successfully');
+
+        // Load existing agents from database
+        await this.agentManager.loadAgentsFromDatabase();
+      }
+    } catch (error) {
+      console.error('❌ Database initialization failed:', error);
+      console.warn('   Server will start but persistence will not work.');
+    }
+
     return new Promise(resolve => {
       this.server.listen(this.port, () => {
         console.log(`\n🎵 Minion Server running at http://localhost:${this.port}`);
@@ -254,6 +278,10 @@ export class MinionServer {
     // Cleanup agents and workspaces
     await this.agentManager.cleanup();
     await this.workspaceManager.cleanup();
+
+    // Close database connection
+    await closeDatabase();
+    console.log('🗄️  Database connection closed');
 
     // Close WebSocket connections
     this.clients.forEach(client => {

@@ -35,3 +35,9 @@ coverage/
 *.tmp
 .cache/
 .eslintcache
+
+# Database
+drizzle/
+
+# Git worktrees
+.minion/
