@@ -154,7 +154,7 @@ export class MINIONServer {
 		this.app.use('/api', router);
 
 		// SPA fallback - serve index.html for all non-API routes
-		this.app.get('*', (req: Request, res: Response) => {
+		this.app.use((req, res) => {
 			res.sendFile(join(__dirname, '../../dist-ui/index.html'));
 		});
 	}

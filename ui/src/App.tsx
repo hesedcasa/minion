@@ -3,6 +3,9 @@ import './App.css';
 import { AgentsGrid } from './components/AgentsGrid';
 import { Controls } from './components/Controls';
 import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { ThemeToggle } from './components/ThemeToggle';
+import { EmptyState } from './components/EmptyState';
 import { AssignTaskModal } from './components/modals/AssignTaskModal';
 import { CreateAgentModal } from './components/modals/CreateAgentModal';
 import { DiffModal } from './components/modals/DiffModal';
@@ -19,6 +22,7 @@ function App() {
   const [currentAgentForTask, setCurrentAgentForTask] = useState<string | null>(null);
   const [currentAgentForDiff, setCurrentAgentForDiff] = useState<string | null>(null);
   const [diffContent, setDiffContent] = useState('');
+  const [currentWorkspace, setCurrentWorkspace] = useState<string>('minion');
 
   const loadAgents = useCallback(async () => {
     try {
@@ -177,20 +181,45 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <Header />
-      <Controls
-        isConnected={isConnected}
-        onCreateAgent={() => setIsCreateModalOpen(true)}
-        onRefresh={loadAgents}
+    <div className="app-layout">
+      <Sidebar
+        onOpenProject={() => setIsCreateModalOpen(true)}
+        onCloneFromUrl={() => setIsCreateModalOpen(true)}
+        currentWorkspace={currentWorkspace}
       />
-      <AgentsGrid
-        agents={agents}
-        onAssignTask={showTaskModal}
-        onViewDiff={handleViewDiff}
-        onStopAgent={handleStopAgent}
-        onRemoveAgent={handleRemoveAgent}
-      />
+
+      <main className="main-content">
+        <div className="top-bar">
+          <div className="top-bar-left">
+            <Header />
+          </div>
+          <div className="top-bar-right">
+            <ThemeToggle />
+            <Controls
+              isConnected={isConnected}
+              onCreateAgent={() => setIsCreateModalOpen(true)}
+              onRefresh={loadAgents}
+            />
+          </div>
+        </div>
+
+        <div className="content-area">
+          {agents.length === 0 ? (
+            <EmptyState
+              onOpenProject={() => setIsCreateModalOpen(true)}
+              onCloneFromUrl={() => setIsCreateModalOpen(true)}
+            />
+          ) : (
+            <AgentsGrid
+              agents={agents}
+              onAssignTask={showTaskModal}
+              onViewDiff={handleViewDiff}
+              onStopAgent={handleStopAgent}
+              onRemoveAgent={handleRemoveAgent}
+            />
+          )}
+        </div>
+      </main>
 
       <CreateAgentModal
         isOpen={isCreateModalOpen}
