@@ -1,4 +1,14 @@
+import { Card, Tag, Button, Space, Typography, Alert, Descriptions } from 'antd';
+import {
+  PlayCircleOutlined,
+  StopOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons';
 import type { Agent } from '../types/agent';
+
+const { Text, Paragraph } = Typography;
 
 interface AgentCardProps {
   agent: Agent;
@@ -8,11 +18,16 @@ interface AgentCardProps {
   onRemoveAgent: (agentId: string) => void;
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    idle: 'default',
+    running: 'processing',
+    completed: 'success',
+    error: 'error',
+    stopped: 'warning',
+  };
+  return colors[status] || 'default';
+};
 
 export function AgentCard({
   agent,
@@ -21,63 +36,80 @@ export function AgentCard({
   onStopAgent,
   onRemoveAgent,
 }: AgentCardProps) {
-  const statusClass = `status-${agent.status}`;
   const statusText = agent.status.charAt(0).toUpperCase() + agent.status.slice(1);
 
   return (
-    <div className="agent-card" data-agent-id={agent.id}>
-      <div className="agent-header">
-        <div>
-          <div
-            className="agent-name"
-            dangerouslySetInnerHTML={{ __html: escapeHtml(agent.name) }}
-          />
-          <div className="agent-id">{agent.id.slice(0, 8)}</div>
-        </div>
-        <span className={`agent-status ${statusClass}`}>{statusText}</span>
-      </div>
-
-      <div className="agent-info">
-        <div className="info-row">
-          <span className="info-label">Branch:</span>
-          <span
-            className="info-value"
-            dangerouslySetInnerHTML={{ __html: escapeHtml(agent.branchName) }}
-          />
-        </div>
-        <div className="info-row">
-          <span className="info-label">Created:</span>
-          <span className="info-value">{new Date(agent.createdAt).toLocaleTimeString()}</span>
-        </div>
-      </div>
+    <Card
+      hoverable
+      title={
+        <Space direction="vertical" size={0} style={{ width: '100%' }}>
+          <Text strong>{agent.name}</Text>
+          <Text type="secondary" style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+            {agent.id.slice(0, 8)}
+          </Text>
+        </Space>
+      }
+      extra={<Tag color={getStatusColor(agent.status)}>{statusText}</Tag>}
+    >
+      <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
+        <Descriptions.Item label="Branch">
+          <Text code>{agent.branchName}</Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Created">
+          {new Date(agent.createdAt).toLocaleString()}
+        </Descriptions.Item>
+      </Descriptions>
 
       {agent.currentTask && (
-        <div className="current-task">
-          <div
-            className="task-description"
-            dangerouslySetInnerHTML={{ __html: escapeHtml(agent.currentTask.description) }}
-          />
-          <div className="task-status">Status: {agent.currentTask.status}</div>
-        </div>
+        <Alert
+          message="Current Task"
+          description={
+            <Space direction="vertical" size={0}>
+              <Paragraph ellipsis={{ rows: 2 }} style={{ margin: 0 }}>
+                {agent.currentTask.description}
+              </Paragraph>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Status: {agent.currentTask.status}
+              </Text>
+            </Space>
+          }
+          type="info"
+          style={{ marginBottom: 16 }}
+        />
       )}
 
-      <div className="agent-actions">
-        <button className="btn btn-primary btn-small" onClick={() => onAssignTask(agent.id)}>
+      <Space wrap>
+        <Button
+          type="primary"
+          size="small"
+          icon={<FileTextOutlined />}
+          onClick={() => onAssignTask(agent.id)}
+        >
           Assign Task
-        </button>
-        <button className="btn btn-secondary btn-small" onClick={() => onViewDiff(agent.id)}>
+        </Button>
+        <Button size="small" icon={<EyeOutlined />} onClick={() => onViewDiff(agent.id)}>
           View Changes
-        </button>
+        </Button>
         {agent.status === 'running' ? (
-          <button className="btn btn-danger btn-small" onClick={() => onStopAgent(agent.id)}>
+          <Button
+            danger
+            size="small"
+            icon={<StopOutlined />}
+            onClick={() => onStopAgent(agent.id)}
+          >
             Stop
-          </button>
+          </Button>
         ) : (
-          <button className="btn btn-danger btn-small" onClick={() => onRemoveAgent(agent.id)}>
+          <Button
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => onRemoveAgent(agent.id)}
+          >
             Remove
-          </button>
+          </Button>
         )}
-      </div>
-    </div>
+      </Space>
+    </Card>
   );
 }

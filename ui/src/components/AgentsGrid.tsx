@@ -1,3 +1,4 @@
+import { Row, Col } from 'antd';
 import { AgentCard } from './AgentCard';
 import type { Agent } from '../types/agent';
 
@@ -16,30 +17,19 @@ export function AgentsGrid({
   onStopAgent,
   onRemoveAgent,
 }: AgentsGridProps) {
-  if (agents.length === 0) {
-    return (
-      <div className="agents-grid">
-        <div className="empty-state">
-          <div className="empty-icon">🎼</div>
-          <h2>No agents yet</h2>
-          <p>Create your first agent to start orchestrating your AI coding team</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="agents-grid">
+    <Row gutter={[16, 16]}>
       {agents.map((agent) => (
-        <AgentCard
-          key={agent.id}
-          agent={agent}
-          onAssignTask={onAssignTask}
-          onViewDiff={onViewDiff}
-          onStopAgent={onStopAgent}
-          onRemoveAgent={onRemoveAgent}
-        />
+        <Col key={agent.id} xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+          <AgentCard
+            agent={agent}
+            onAssignTask={onAssignTask}
+            onViewDiff={onViewDiff}
+            onStopAgent={onStopAgent}
+            onRemoveAgent={onRemoveAgent}
+          />
+        </Col>
       ))}
-    </div>
+    </Row>
   );
 }

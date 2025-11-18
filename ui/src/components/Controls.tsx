@@ -1,3 +1,5 @@
+import { Button, Space } from 'antd';
+import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ConnectionStatus } from './ConnectionStatus';
 
 interface ControlsProps {
@@ -8,14 +10,14 @@ interface ControlsProps {
 
 export function Controls({ isConnected, onCreateAgent, onRefresh }: ControlsProps) {
   return (
-    <div className="controls">
-      <button className="btn btn-primary" onClick={onCreateAgent}>
-        + Create New Agent
-      </button>
-      <button className="btn btn-secondary" onClick={onRefresh}>
-        🔄 Refresh
-      </button>
+    <Space>
+      <Button type="primary" icon={<PlusOutlined />} onClick={onCreateAgent}>
+        Create New Agent
+      </Button>
+      <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+        Refresh
+      </Button>
       <ConnectionStatus isConnected={isConnected} />
-    </div>
+    </Space>
   );
 }

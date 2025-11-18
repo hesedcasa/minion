@@ -1,8 +1,13 @@
+import { Typography } from 'antd';
+
+const { Title } = Typography;
+
 export function Header() {
   return (
     <header>
-      <h1>🎵 Minion</h1>
-      <p className="tagline">Orchestrate Your AI Agent Orchestra</p>
+      <Title level={3} style={{ margin: 0 }}>
+        🎵 Minion
+      </Title>
     </header>
   );
 }

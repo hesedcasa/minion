@@ -1,3 +1,4 @@
+import { Modal, Form, Input, message } from 'antd';
 import { useState } from 'react';
 
 interface CreateAgentModalProps {
@@ -7,79 +8,56 @@ interface CreateAgentModalProps {
 }
 
 export function CreateAgentModal({ isOpen, onClose, onCreateAgent }: CreateAgentModalProps) {
-  const [name, setName] = useState('');
-  const [apiKey, setApiKey] = useState('');
+  const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
-
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      alert('Please enter an agent name');
-      return;
-    }
-
+  const handleSubmit = async (values: { name: string; apiKey?: string }) => {
     setIsSubmitting(true);
     try {
-      await onCreateAgent(name.trim(), apiKey.trim() || undefined);
-      setName('');
-      setApiKey('');
+      await onCreateAgent(values.name.trim(), values.apiKey?.trim() || undefined);
+      form.resetFields();
       onClose();
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      message.error(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+  const handleCancel = () => {
+    form.resetFields();
+    onClose();
   };
 
   return (
-    <div className="modal active" onClick={handleBackdropClick}>
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2>Create New Agent</h2>
-          <button className="close-btn" onClick={onClose}>
-            &times;
-          </button>
-        </div>
-        <div className="modal-body">
-          <div className="form-group">
-            <label htmlFor="agentName">Agent Name</label>
-            <input
-              type="text"
-              id="agentName"
-              placeholder="e.g., Frontend Developer"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="apiKey">Anthropic API Key (optional)</label>
-            <input
-              type="password"
-              id="apiKey"
-              placeholder="sk-ant-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <small>Leave empty to use ANTHROPIC_API_KEY environment variable</small>
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Agent'}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      title="Create New Agent"
+      open={isOpen}
+      onOk={form.submit}
+      onCancel={handleCancel}
+      confirmLoading={isSubmitting}
+      okText={isSubmitting ? 'Creating...' : 'Create Agent'}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+      >
+        <Form.Item
+          label="Agent Name"
+          name="name"
+          rules={[{ required: true, message: 'Please enter an agent name' }]}
+        >
+          <Input placeholder="e.g., Frontend Developer" />
+        </Form.Item>
+        <Form.Item
+          label="Anthropic API Key (optional)"
+          name="apiKey"
+          help="Leave empty to use ANTHROPIC_API_KEY environment variable"
+        >
+          <Input.Password placeholder="sk-ant-..." />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 }

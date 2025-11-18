@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ConfigProvider, Layout, Space, Modal, message, theme as antTheme } from 'antd';
 import './App.css';
 import { AgentsGrid } from './components/AgentsGrid';
 import { Controls } from './components/Controls';
@@ -12,6 +13,7 @@ import { DiffModal } from './components/modals/DiffModal';
 import { useWebSocket } from './hooks/useWebSocket';
 import type { Agent, WebSocketMessage } from './types/agent';
 
+const { Content } = Layout;
 const API_BASE_URL = window.location.origin;
 
 function App() {
@@ -23,6 +25,10 @@ function App() {
   const [currentAgentForDiff, setCurrentAgentForDiff] = useState<string | null>(null);
   const [diffContent, setDiffContent] = useState('');
   const [currentWorkspace, setCurrentWorkspace] = useState<string>('minion');
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'dark') || !saved;
+  });
 
   const loadAgents = useCallback(async () => {
     try {
@@ -113,7 +119,7 @@ function App() {
       setDiffContent(data.diff || 'No changes yet');
       setIsDiffModalOpen(true);
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      message.error(`Error: ${error.message}`);
     }
   };
 
@@ -129,50 +135,59 @@ function App() {
       throw new Error(error.error || 'Failed to merge');
     }
 
-    alert('Changes merged successfully!');
     loadAgents();
   };
 
   const handleStopAgent = async (agentId: string) => {
-    if (!confirm('Are you sure you want to stop this agent?')) {
-      return;
-    }
+    Modal.confirm({
+      title: 'Stop Agent',
+      content: 'Are you sure you want to stop this agent?',
+      okText: 'Stop',
+      okType: 'danger',
+      onOk: async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/agents/${agentId}/stop`, {
+            method: 'POST',
+          });
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/agents/${agentId}/stop`, {
-        method: 'POST',
-      });
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to stop agent');
+          }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to stop agent');
-      }
-
-      loadAgents();
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-    }
+          message.success('Agent stopped successfully');
+          loadAgents();
+        } catch (error: any) {
+          message.error(`Error: ${error.message}`);
+        }
+      },
+    });
   };
 
   const handleRemoveAgent = async (agentId: string) => {
-    if (!confirm('Are you sure you want to remove this agent? This will delete its workspace.')) {
-      return;
-    }
+    Modal.confirm({
+      title: 'Remove Agent',
+      content: 'Are you sure you want to remove this agent? This will delete its workspace.',
+      okText: 'Remove',
+      okType: 'danger',
+      onOk: async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/agents/${agentId}?force=true`, {
+            method: 'DELETE',
+          });
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/agents/${agentId}?force=true`, {
-        method: 'DELETE',
-      });
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to remove agent');
+          }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to remove agent');
-      }
-
-      setAgents((prev) => prev.filter((agent) => agent.id !== agentId));
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-    }
+          message.success('Agent removed successfully');
+          setAgents((prev) => prev.filter((agent) => agent.id !== agentId));
+        } catch (error: any) {
+          message.error(`Error: ${error.message}`);
+        }
+      },
+    });
   };
 
   const showTaskModal = (agentId: string) => {
@@ -181,74 +196,87 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
-      <Sidebar
-        onOpenProject={() => setIsCreateModalOpen(true)}
-        onCloneFromUrl={() => setIsCreateModalOpen(true)}
-        currentWorkspace={currentWorkspace}
-      />
+    <ConfigProvider
+      theme={{
+        algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+        token: {
+          colorPrimary: '#6366f1',
+        },
+      }}
+    >
+      <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'row' }}>
+        <Sidebar
+          onOpenProject={() => setIsCreateModalOpen(true)}
+          onCloneFromUrl={() => setIsCreateModalOpen(true)}
+          currentWorkspace={currentWorkspace}
+        />
 
-      <main className="main-content">
-        <div className="top-bar">
-          <div className="top-bar-left">
+        <Layout>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 24px',
+            borderBottom: '1px solid var(--border-color, #d9d9d9)',
+          }}>
             <Header />
+            <Space>
+              <ThemeToggle onThemeChange={(theme) => setIsDarkMode(theme === 'dark')} />
+              <Controls
+                isConnected={isConnected}
+                onCreateAgent={() => setIsCreateModalOpen(true)}
+                onRefresh={loadAgents}
+              />
+            </Space>
           </div>
-          <div className="top-bar-right">
-            <ThemeToggle />
-            <Controls
-              isConnected={isConnected}
-              onCreateAgent={() => setIsCreateModalOpen(true)}
-              onRefresh={loadAgents}
-            />
-          </div>
-        </div>
 
-        <div className="content-area">
-          {agents.length === 0 ? (
-            <EmptyState
-              onOpenProject={() => setIsCreateModalOpen(true)}
-              onCloneFromUrl={() => setIsCreateModalOpen(true)}
-            />
-          ) : (
-            <AgentsGrid
-              agents={agents}
-              onAssignTask={showTaskModal}
-              onViewDiff={handleViewDiff}
-              onStopAgent={handleStopAgent}
-              onRemoveAgent={handleRemoveAgent}
-            />
-          )}
-        </div>
-      </main>
+          <Content style={{ padding: 24, overflow: 'auto' }}>
+            {agents.length === 0 ? (
+              <EmptyState
+                onOpenProject={() => setIsCreateModalOpen(true)}
+                onCloneFromUrl={() => setIsCreateModalOpen(true)}
+              />
+            ) : (
+              <AgentsGrid
+                agents={agents}
+                onAssignTask={showTaskModal}
+                onViewDiff={handleViewDiff}
+                onStopAgent={handleStopAgent}
+                onRemoveAgent={handleRemoveAgent}
+              />
+            )}
+          </Content>
+        </Layout>
 
-      <CreateAgentModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreateAgent={handleCreateAgent}
-      />
+        <CreateAgentModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreateAgent={handleCreateAgent}
+        />
 
-      <AssignTaskModal
-        isOpen={isTaskModalOpen}
-        agentId={currentAgentForTask}
-        onClose={() => {
-          setIsTaskModalOpen(false);
-          setCurrentAgentForTask(null);
-        }}
-        onAssignTask={handleAssignTask}
-      />
+        <AssignTaskModal
+          isOpen={isTaskModalOpen}
+          agentId={currentAgentForTask}
+          onClose={() => {
+            setIsTaskModalOpen(false);
+            setCurrentAgentForTask(null);
+          }}
+          onAssignTask={handleAssignTask}
+        />
 
-      <DiffModal
-        isOpen={isDiffModalOpen}
-        agentId={currentAgentForDiff}
-        diff={diffContent}
-        onClose={() => {
-          setIsDiffModalOpen(false);
-          setCurrentAgentForDiff(null);
-          setDiffContent('');
-        }}
-        onMerge={handleMerge}
-      />
-    </div>
+        <DiffModal
+          isOpen={isDiffModalOpen}
+          agentId={currentAgentForDiff}
+          diff={diffContent}
+          onClose={() => {
+            setIsDiffModalOpen(false);
+            setCurrentAgentForDiff(null);
+            setDiffContent('');
+          }}
+          onMerge={handleMerge}
+        />
+      </Layout>
+    </ConfigProvider>
   );
 }
 
