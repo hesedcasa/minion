@@ -292,6 +292,14 @@ When creating pull requests, the PR title must follow this format. The PR descri
 
 4. **Styling**: CSS is in `ui/src/App.css` (same styles as original, unchanged)
 
+5. **Ant Design Reference**: **ALWAYS refer to `ANT_DESIGN.md`** when working on UI components
+   - Contains comprehensive Ant Design component documentation links
+   - Design principles and UX patterns for enterprise applications
+   - Vite integration guides (this project uses Vite)
+   - Theming and customization documentation
+   - Best practices for accessibility and component usage
+   - Use this reference to ensure proper implementation following Ant Design standards
+
 ### Building and Testing
 
 ```bash

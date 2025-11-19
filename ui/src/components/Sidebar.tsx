@@ -3,7 +3,7 @@ import {
   DeleteOutlined,
   DownOutlined,
   FolderOpenOutlined,
-  HomeOutlined,
+  SmileTwoTone,
   MessageOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -54,8 +54,8 @@ export function Sidebar({ onOpenProject, onCloneFromUrl, currentWorkspace }: Sid
         items={[
           {
             key: 'home',
-            icon: <HomeOutlined />,
-            label: 'Home',
+            icon: <SmileTwoTone twoToneColor="var(--minion-yellow)" />,
+            label: 'Minion',
           },
         ]}
       />

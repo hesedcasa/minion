@@ -70,7 +70,7 @@
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.2",
-    "vitepress": "^1.6.4"
+    "vitepress": "^0.1.1"
   },
   "repository": {
     "type": "git",
