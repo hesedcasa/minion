@@ -1,2 +1,6 @@
 # Prettier-only ignores.
 CHANGELOG.md
+
+# Test artifacts
+test-results/
+playwright-report/

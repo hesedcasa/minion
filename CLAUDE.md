@@ -21,6 +21,13 @@ npm run dev
 npm run format              # Format code with ESLint and Prettier
 npm run find-deadcode       # Find unused exports with ts-prune
 npm run pre-commit          # Run format + find-deadcode
+
+# Testing
+npm test                    # Run all Playwright tests
+npm run test:api            # Run API tests only
+npm run test:e2e            # Run E2E tests only
+npm run test:ui             # Open Playwright UI mode
+npm run test:report         # View test report
 ```
 
 ## Project Architecture
@@ -285,6 +292,14 @@ When creating pull requests, the PR title must follow this format. The PR descri
 
 4. **Styling**: CSS is in `ui/src/App.css` (same styles as original, unchanged)
 
+5. **Ant Design Reference**: **ALWAYS refer to `ANT_DESIGN.md`** when working on UI components
+   - Contains comprehensive Ant Design component documentation links
+   - Design principles and UX patterns for enterprise applications
+   - Vite integration guides (this project uses Vite)
+   - Theming and customization documentation
+   - Best practices for accessibility and component usage
+   - Use this reference to ensure proper implementation following Ant Design standards
+
 ### Building and Testing
 
 ```bash
@@ -297,6 +312,69 @@ npm start
 # Test specific functionality (after building)
 node dist/index.js --help
 ```
+
+### Testing with Playwright
+
+The project includes a comprehensive Playwright test suite covering both API endpoints and end-to-end UI testing.
+
+**Test Structure:**
+
+```
+tests/
+├── api/              # API endpoint tests
+│   ├── health.spec.ts
+│   ├── agents.spec.ts
+│   ├── tasks.spec.ts
+│   └── workspaces.spec.ts
+├── e2e/              # End-to-end UI tests
+│   ├── app-layout.spec.ts
+│   ├── create-agent.spec.ts
+│   ├── websocket.spec.ts
+│   ├── theme.spec.ts
+│   └── agent-workflow.spec.ts
+├── fixtures/         # Test fixtures and base configuration
+└── utils/           # Test utilities and helpers
+```
+
+**Running Tests:**
+
+```bash
+# Run all tests
+npm test
+
+# Run API tests only
+npm run test:api
+
+# Run E2E tests only
+npm run test:e2e
+
+# Run tests in headed mode (see browser)
+npm run test:headed
+
+# Debug tests
+npm run test:debug
+
+# Open Playwright UI mode
+npm run test:ui
+
+# View test report
+npm run test:report
+
+# Generate tests with Codegen
+npm run test:codegen
+```
+
+**Key Features:**
+
+- **API Testing**: Tests all REST endpoints (agents, tasks, workspaces)
+- **E2E Testing**: Tests user workflows and UI interactions
+- **WebSocket Testing**: Tests real-time updates and connection handling
+- **Fixtures and Helpers**: Reusable test utilities for common operations
+- **CI/CD Integration**: Automated tests run on GitHub Actions
+- **Parallel Execution**: Tests run in parallel with sharding on CI
+- **Automatic Cleanup**: Tests clean up created agents after execution
+
+See `tests/README.md` for detailed documentation on writing and debugging tests.
 
 ### Common Patterns
 

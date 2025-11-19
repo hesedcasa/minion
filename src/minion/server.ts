@@ -168,7 +168,7 @@ export class MinionServer {
 
   private setupWebSocket(): void {
     this.wss.on('connection', (ws: WebSocket) => {
-      console.log('New WebSocket client connected');
+      console.log('WebSocket client connected');
       this.clients.add(ws);
 
       ws.on('close', () => {
@@ -264,17 +264,13 @@ export class MinionServer {
 
     return new Promise(resolve => {
       this.server.listen(this.port, () => {
-        console.log(`\n🎵 Minion Server running at http://localhost:${this.port}`);
-        console.log(`📡 WebSocket ready for real-time updates`);
-        console.log(`📁 Working directory: ${this.workspaceManager['baseRepoPath']}\n`);
+        console.log(`\n😳 Minion running at http://localhost:${this.port}`);
         resolve();
       });
     });
   }
 
   async stop(): Promise<void> {
-    console.log('\n🛑 Shutting down Minion...');
-
     // Cleanup agents and workspaces
     await this.agentManager.cleanup();
     await this.workspaceManager.cleanup();
@@ -293,7 +289,7 @@ export class MinionServer {
       this.server.close((error?: Error) => {
         if (error) reject(error);
         else {
-          console.log('✅ Minion stopped gracefully');
+          console.log('😴 Minion shutdown');
           resolve();
         }
       });
