@@ -12,6 +12,7 @@ import { AssignTaskModal } from './components/modals/AssignTaskModal';
 import { CreateAgentModal } from './components/modals/CreateAgentModal';
 import { DiffModal } from './components/modals/DiffModal';
 import { useWebSocket } from './hooks/useWebSocket';
+import { DatabaseAdmin } from './pages/DatabaseAdmin';
 import type { Agent, WebSocketMessage } from './types/agent';
 
 const { Content } = Layout;
@@ -26,6 +27,7 @@ function App() {
   const [currentAgentForDiff, setCurrentAgentForDiff] = useState<string | null>(null);
   const [diffContent, setDiffContent] = useState('');
   const [currentWorkspace] = useState<string>('minion');
+  const [currentView, setCurrentView] = useState<'agents' | 'database'>('agents');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('theme');
     return saved === 'dark' || !saved;
@@ -215,80 +217,85 @@ function App() {
         },
       }}
     >
-      <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'row' }}>
-        <Sidebar
-          onOpenProject={() => setIsCreateModalOpen(true)}
-          onCloneFromUrl={() => setIsCreateModalOpen(true)}
-          currentWorkspace={currentWorkspace}
-        />
+      {currentView === 'database' ? (
+        <DatabaseAdmin onBack={() => setCurrentView('agents')} />
+      ) : (
+        <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'row' }}>
+          <Sidebar
+            onOpenProject={() => setIsCreateModalOpen(true)}
+            onCloneFromUrl={() => setIsCreateModalOpen(true)}
+            onOpenDatabase={() => setCurrentView('database')}
+            currentWorkspace={currentWorkspace}
+          />
 
-        <Layout>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '12px 24px',
-              borderBottom: '1px solid var(--border-color, #d9d9d9)',
+          <Layout>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 24px',
+                borderBottom: '1px solid var(--border-color, #d9d9d9)',
+              }}
+            >
+              <Header />
+              <Space>
+                <ThemeToggle onThemeChange={theme => setIsDarkMode(theme === 'dark')} />
+                <Controls
+                  isConnected={isConnected}
+                  onCreateAgent={() => setIsCreateModalOpen(true)}
+                  onRefresh={loadAgents}
+                />
+              </Space>
+            </div>
+
+            <Content style={{ padding: 24, overflow: 'auto' }}>
+              {agents.length === 0 ? (
+                <EmptyState
+                  onOpenProject={() => setIsCreateModalOpen(true)}
+                  onCloneFromUrl={() => setIsCreateModalOpen(true)}
+                />
+              ) : (
+                <AgentsGrid
+                  agents={agents}
+                  onAssignTask={showTaskModal}
+                  onViewDiff={handleViewDiff}
+                  onStopAgent={handleStopAgent}
+                  onRemoveAgent={handleRemoveAgent}
+                />
+              )}
+            </Content>
+          </Layout>
+
+          <CreateAgentModal
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onCreateAgent={handleCreateAgent}
+          />
+
+          <AssignTaskModal
+            isOpen={isTaskModalOpen}
+            agentId={currentAgentForTask}
+            onClose={() => {
+              setIsTaskModalOpen(false);
+              setCurrentAgentForTask(null);
             }}
-          >
-            <Header />
-            <Space>
-              <ThemeToggle onThemeChange={theme => setIsDarkMode(theme === 'dark')} />
-              <Controls
-                isConnected={isConnected}
-                onCreateAgent={() => setIsCreateModalOpen(true)}
-                onRefresh={loadAgents}
-              />
-            </Space>
-          </div>
+            onAssignTask={handleAssignTask}
+          />
 
-          <Content style={{ padding: 24, overflow: 'auto' }}>
-            {agents.length === 0 ? (
-              <EmptyState
-                onOpenProject={() => setIsCreateModalOpen(true)}
-                onCloneFromUrl={() => setIsCreateModalOpen(true)}
-              />
-            ) : (
-              <AgentsGrid
-                agents={agents}
-                onAssignTask={showTaskModal}
-                onViewDiff={handleViewDiff}
-                onStopAgent={handleStopAgent}
-                onRemoveAgent={handleRemoveAgent}
-              />
-            )}
-          </Content>
+          <DiffModal
+            isOpen={isDiffModalOpen}
+            agentId={currentAgentForDiff}
+            diff={diffContent}
+            onClose={() => {
+              setIsDiffModalOpen(false);
+              setCurrentAgentForDiff(null);
+              setDiffContent('');
+            }}
+            onMerge={handleMerge}
+          />
         </Layout>
-
-        <CreateAgentModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onCreateAgent={handleCreateAgent}
-        />
-
-        <AssignTaskModal
-          isOpen={isTaskModalOpen}
-          agentId={currentAgentForTask}
-          onClose={() => {
-            setIsTaskModalOpen(false);
-            setCurrentAgentForTask(null);
-          }}
-          onAssignTask={handleAssignTask}
-        />
-
-        <DiffModal
-          isOpen={isDiffModalOpen}
-          agentId={currentAgentForDiff}
-          diff={diffContent}
-          onClose={() => {
-            setIsDiffModalOpen(false);
-            setCurrentAgentForDiff(null);
-            setDiffContent('');
-          }}
-          onMerge={handleMerge}
-        />
-      </Layout>
+      )}
     </ConfigProvider>
   );
 }

@@ -8,7 +8,19 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type WebSocket, WebSocketServer } from 'ws';
 
-import { initDatabase, closeDatabase, testConnection } from '../db/index.js';
+import {
+  initDatabase,
+  closeDatabase,
+  testConnection,
+  getTables,
+  getTableSchema,
+  getTableData,
+  insertRow,
+  updateRow,
+  deleteRow,
+  executeQuery,
+  exportTableToCSV,
+} from '../db/index.js';
 import { AgentManager } from './agentManager.js';
 import type { MergeRequest, TaskRequest, WebSocketMessage } from './types.js';
 import { WorkspaceManager } from './workspaceManager.js';
@@ -146,6 +158,117 @@ export class MinionServer {
 
         await this.workspaceManager.mergeBranch(req.params.id, targetBranch, deleteBranch);
         res.json({ success: true });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    // Database admin routes
+    router.get('/database/tables', async (req: Request, res: Response) => {
+      try {
+        const tables = await getTables();
+        res.json(tables);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.get('/database/tables/:tableName/schema', async (req: Request, res: Response) => {
+      try {
+        const schema = await getTableSchema(req.params.tableName);
+        res.json(schema);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.get('/database/tables/:tableName/data', async (req: Request, res: Response) => {
+      try {
+        const page = req.query.page ? parseInt(req.query.page as string) : 1;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : 50;
+        const sortBy = req.query.sortBy as string;
+        const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
+
+        // Parse filters from query string
+        const filters: Record<string, any> = {};
+        for (const [key, value] of Object.entries(req.query)) {
+          if (key.startsWith('filter_')) {
+            const columnName = key.replace('filter_', '');
+            filters[columnName] = value;
+          }
+        }
+
+        const data = await getTableData(req.params.tableName, {
+          page,
+          pageSize,
+          sortBy,
+          sortOrder,
+          filters,
+        });
+        res.json(data);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.post('/database/tables/:tableName/row', async (req: Request, res: Response) => {
+      try {
+        const row = await insertRow(req.params.tableName, req.body);
+        res.status(201).json(row);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.put('/database/tables/:tableName/row/:id', async (req: Request, res: Response) => {
+      try {
+        const row = await updateRow(req.params.tableName, req.params.id, req.body);
+        res.json(row);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.delete('/database/tables/:tableName/row/:id', async (req: Request, res: Response) => {
+      try {
+        await deleteRow(req.params.tableName, req.params.id);
+        res.json({ success: true });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.post('/database/query', async (req: Request, res: Response) => {
+      try {
+        const { query } = req.body;
+        if (!query) {
+          res.status(400).json({ error: 'Query is required' });
+          return;
+        }
+        const result = await executeQuery(query);
+        res.json(result);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(500).json({ error: message });
+      }
+    });
+
+    router.get('/database/tables/:tableName/export/csv', async (req: Request, res: Response) => {
+      try {
+        const csv = await exportTableToCSV(req.params.tableName);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${req.params.tableName}.csv"`
+        );
+        res.send(csv);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         res.status(500).json({ error: message });

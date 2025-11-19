@@ -1,5 +1,6 @@
 import {
   BranchesOutlined,
+  DatabaseOutlined,
   DeleteOutlined,
   DownOutlined,
   FolderOpenOutlined,
@@ -15,10 +16,11 @@ import type { MenuProps } from 'antd';
 interface SidebarProps {
   onOpenProject: () => void;
   onCloneFromUrl: () => void;
+  onOpenDatabase: () => void;
   currentWorkspace?: string;
 }
 
-export function Sidebar({ onOpenProject, onCloneFromUrl, currentWorkspace }: SidebarProps) {
+export function Sidebar({ onOpenProject, onCloneFromUrl, onOpenDatabase, currentWorkspace }: SidebarProps) {
   const workspaceItems: MenuProps['items'] = [
     {
       key: 'current',
@@ -94,6 +96,12 @@ export function Sidebar({ onOpenProject, onCloneFromUrl, currentWorkspace }: Sid
           mode="inline"
           style={{ background: 'transparent', border: 'none' }}
           items={[
+            {
+              key: 'database',
+              icon: <DatabaseOutlined />,
+              label: 'Database Admin',
+              onClick: onOpenDatabase,
+            },
             {
               key: 'open',
               icon: <FolderOpenOutlined />,
