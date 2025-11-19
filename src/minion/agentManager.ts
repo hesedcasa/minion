@@ -4,6 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 
+import { agentRepository, taskRepository, agentLogRepository } from '../db/index.js';
 import type { AgentInfo, AgentStatus, AgentTask, TaskRequest } from './types.js';
 import type { WorkspaceManager } from './workspaceManager.js';
 
@@ -15,11 +16,13 @@ export class AgentManager extends EventEmitter {
   private tasks: Map<string, AgentTask> = new Map();
   private workspaceManager: WorkspaceManager;
   private defaultApiKey?: string;
+  private projectId?: string;
 
-  constructor(workspaceManager: WorkspaceManager, apiKey?: string) {
+  constructor(workspaceManager: WorkspaceManager, apiKey?: string, projectId?: string) {
     super();
     this.workspaceManager = workspaceManager;
     this.defaultApiKey = apiKey || process.env.ANTHROPIC_API_KEY;
+    this.projectId = projectId;
   }
 
   /**
@@ -41,6 +44,24 @@ export class AgentManager extends EventEmitter {
         branchName,
         createdAt: new Date(),
       };
+
+      // Persist to database
+      await agentRepository.create({
+        id: agentId,
+        projectId: this.projectId,
+        name,
+        status: 'idle',
+        workspacePath,
+        branchName,
+        createdAt: new Date(),
+      });
+
+      // Log agent creation
+      await agentLogRepository.create({
+        agentId,
+        logType: 'info',
+        message: `Agent created: ${name}`,
+      });
 
       this.agents.set(agentId, agentInfo);
       this.emit('agent_created', agentInfo);
@@ -64,13 +85,32 @@ export class AgentManager extends EventEmitter {
       throw new Error(`Agent ${agentId} is already running a task`);
     }
 
+    const taskId = randomUUID();
     const task: AgentTask = {
-      id: randomUUID(),
+      id: taskId,
       agentId,
       description: taskRequest.description,
       status: 'pending',
       createdAt: new Date(),
     };
+
+    // Persist to database
+    await taskRepository.create({
+      id: taskId,
+      agentId,
+      description: taskRequest.description,
+      context: taskRequest.context,
+      status: 'pending',
+      createdAt: new Date(),
+    });
+
+    // Log task creation
+    await agentLogRepository.create({
+      agentId,
+      taskId,
+      logType: 'info',
+      message: `Task assigned: ${taskRequest.description}`,
+    });
 
     this.tasks.set(task.id, task);
     agent.currentTask = task;
@@ -199,6 +239,16 @@ export class AgentManager extends EventEmitter {
     // Remove worktree
     await this.workspaceManager.removeWorktree(agentId, force);
 
+    // Log agent removal before deleting from database
+    await agentLogRepository.create({
+      agentId,
+      logType: 'info',
+      message: 'Agent removed',
+    });
+
+    // Remove from database (cascades to tasks and logs)
+    await agentRepository.delete(agentId);
+
     // Remove from memory
     this.agents.delete(agentId);
     this.emit('agent_removed', { agentId });
@@ -216,6 +266,48 @@ export class AgentManager extends EventEmitter {
    */
   listAgents(): AgentInfo[] {
     return Array.from(this.agents.values());
+  }
+
+  /**
+   * Loads agents from database into memory
+   */
+  async loadAgentsFromDatabase(): Promise<void> {
+    try {
+      const dbAgents = await agentRepository.findAll();
+      for (const dbAgent of dbAgents) {
+        const agentInfo: AgentInfo = {
+          id: dbAgent.id,
+          name: dbAgent.name,
+          status: dbAgent.status as AgentStatus,
+          workspacePath: dbAgent.workspacePath,
+          branchName: dbAgent.branchName,
+          createdAt: dbAgent.createdAt,
+          lastActivity: dbAgent.lastActivity || undefined,
+        };
+        this.agents.set(dbAgent.id, agentInfo);
+
+        // Load current task if exists
+        const runningTask = await taskRepository.findRunningByAgentId(dbAgent.id);
+        if (runningTask) {
+          const task: AgentTask = {
+            id: runningTask.id,
+            agentId: runningTask.agentId,
+            description: runningTask.description,
+            status: runningTask.status as AgentTask['status'],
+            createdAt: runningTask.createdAt,
+            startedAt: runningTask.startedAt || undefined,
+            completedAt: runningTask.completedAt || undefined,
+            error: runningTask.error || undefined,
+            output: runningTask.output || undefined,
+          };
+          this.tasks.set(task.id, task);
+          agentInfo.currentTask = task;
+        }
+      }
+      console.log(`Loaded ${dbAgents.length} agents from database`);
+    } catch (error) {
+      console.error('Failed to load agents from database:', error);
+    }
   }
 
   /**
@@ -243,6 +335,22 @@ export class AgentManager extends EventEmitter {
     agent.lastActivity = new Date();
     this.agents.set(agentId, agent);
 
+    // Persist to database
+    agentRepository.updateStatus(agentId, status, agent.lastActivity).catch(error => {
+      console.error(`Failed to update agent status in database:`, error);
+    });
+
+    // Log status change
+    agentLogRepository
+      .create({
+        agentId,
+        logType: 'info',
+        message: `Agent status changed to: ${status}`,
+      })
+      .catch(error => {
+        console.error(`Failed to log agent status change:`, error);
+      });
+
     this.emit('agent_status_changed', { agentId, status });
   }
 
@@ -263,6 +371,26 @@ export class AgentManager extends EventEmitter {
     if (error) task.error = error;
 
     this.tasks.set(taskId, task);
+
+    // Persist to database
+    taskRepository.updateStatus(taskId, status, output, error).catch(err => {
+      console.error(`Failed to update task status in database:`, err);
+    });
+
+    // Log task status change
+    const logType = error ? 'error' : 'info';
+    const message = error ? `Task failed: ${error}` : `Task status: ${status}`;
+    agentLogRepository
+      .create({
+        agentId: task.agentId,
+        taskId,
+        logType,
+        message,
+      })
+      .catch(err => {
+        console.error(`Failed to log task status change:`, err);
+      });
+
     this.emit('task_status_changed', { taskId, status });
   }
 
